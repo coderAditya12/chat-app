@@ -1,6 +1,7 @@
 import express, { NextFunction, Request, Response } from 'express';
 import cookieparser from "cookie-parser";
 import dotenv from "dotenv";
+import authRoute from "./routes/auth.route.js"
 import cors from "cors";
 dotenv.config();
 const app = express();
@@ -13,6 +14,7 @@ app.use(
     credentials: true,
   })
 );
+app.use("/api/auth", authRoute);
 interface customError extends Error {
   statusCode?: number;
 }
