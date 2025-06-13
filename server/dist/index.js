@@ -1,6 +1,7 @@
 import express from 'express';
 import cookieparser from "cookie-parser";
 import dotenv from "dotenv";
+import authRoute from "./routes/auth.route.js";
 import cors from "cors";
 dotenv.config();
 const app = express();
@@ -11,6 +12,7 @@ app.use(cors({
     methods: "*",
     credentials: true,
 }));
+app.use("/api/auth", authRoute);
 app.use((err, req, res, next) => {
     const statusCode = err.statusCode || 500;
     const message = err.message || "internal server error";

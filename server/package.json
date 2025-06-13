@@ -4,9 +4,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "prisma generate && tsc",
     "start": "node dist/index.js",
-    "dev": "concurrently \"tsc --watch\" \"nodemon dist/index.js\""
+    "dev": "prisma generate && concurrently \"tsc --watch\" \"nodemon dist/index.js\""
   },
   "keywords": [],
   "author": "",

@@ -138,7 +138,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\reala\\Desktop\\devchat\\server\\generated\\prisma",
+      "value": "C:\\Users\\reala\\Desktop\\devchat\\server\\src\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -156,16 +156,17 @@ const config = {
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
-    "rootEnvPath": "../../.env",
-    "schemaEnvPath": "../../.env"
+    "rootEnvPath": null,
+    "schemaEnvPath": "../../../.env"
   },
-  "relativePath": "../../prisma",
+  "relativePath": "../../../prisma",
   "clientVersion": "6.9.0",
   "engineVersion": "81e4af48011447c3cc503a190e86995b66d2a28e",
   "datasourceNames": [
     "db"
   ],
   "activeProvider": "postgresql",
+  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
@@ -174,8 +175,8 @@ const config = {
       }
     }
   },
-  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id               String   @id @default(cuid())\n  fullName         String\n  email            String   @unique\n  password         String\n  bio              String?  @default(\"\")\n  profilePic       String?  @default(\"\")\n  nativeLanguage   String?  @default(\"\")\n  learningLanguage String?  @default(\"\")\n  location         String?  @default(\"\")\n  isOnboard        Boolean  @default(false)\n  createdAt        DateTime @default(now())\n  updatedAt        DateTime @updatedAt\n}\n",
-  "inlineSchemaHash": "4842fe839d2c0515ddfe2d88103c9996e826f3fd47757cbd8d3c296df538309f",
+  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel User {\n  id               String   @id @default(cuid())\n  fullName         String\n  email            String   @unique\n  password         String\n  bio              String?  @default(\"\")\n  profilePic       String?  @default(\"\")\n  nativeLanguage   String?  @default(\"\")\n  learningLanguage String?  @default(\"\")\n  location         String?  @default(\"\")\n  isOnboard        Boolean  @default(false)\n  createdAt        DateTime @default(now())\n  updatedAt        DateTime @updatedAt\n}\n",
+  "inlineSchemaHash": "112f2f78aa99f1acf8a22c5ea8c4d57c5a64a8687616e09f87f5b4adf7f181ea",
   "copyEngine": true
 }
 
@@ -184,8 +185,8 @@ const fs = require('fs')
 config.dirname = __dirname
 if (!fs.existsSync(path.join(__dirname, 'schema.prisma'))) {
   const alternativePaths = [
+    "src/generated/prisma",
     "generated/prisma",
-    "prisma",
   ]
   
   const alternativePath = alternativePaths.find((altPath) => {
@@ -215,7 +216,7 @@ Object.assign(exports, Prisma)
 
 // file annotations for bundling tools to include these files
 path.join(__dirname, "query_engine-windows.dll.node");
-path.join(process.cwd(), "generated/prisma/query_engine-windows.dll.node")
+path.join(process.cwd(), "src/generated/prisma/query_engine-windows.dll.node")
 // file annotations for bundling tools to include these files
 path.join(__dirname, "schema.prisma");
-path.join(process.cwd(), "generated/prisma/schema.prisma")
+path.join(process.cwd(), "src/generated/prisma/schema.prisma")
