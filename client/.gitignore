@@ -1,0 +1,19 @@
+# Environment variables (KEEP THESE!)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Dependencies (KEEP THIS!)
+node_modules/
+
+# Build outputs (KEEP THESE!)
+.next/
+out/
+dist/
+build/
+
+# Logs (KEEP THESE!)
+*.log
+npm-debug.log*
