@@ -4,7 +4,7 @@ import { CustomRequest, verifyToken } from "../middleware/verify.js";
 import { googleAuth, signIn, signOut, signUp } from "../controllers/auth.controller.js";
 
 
-const router: Router = express.Router();
+const router= express.Router();
 
 router.post("/signup", signUp);
 router.post("/signin", signIn);

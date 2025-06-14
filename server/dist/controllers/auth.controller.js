@@ -90,7 +90,7 @@ export const signOut = async (req, res, next) => {
     }
 };
 export const googleAuth = async (req, res, next) => {
-    const { name, email } = req.body;
+    const { fullName, email } = req.body;
     try {
         const existingUser = await prisma.user.findUnique({
             where: { email },
@@ -119,7 +119,7 @@ export const googleAuth = async (req, res, next) => {
         const newUser = await prisma.user.create({
             data: {
                 email,
-                fullName: name,
+                fullName,
                 password: hashedPassword,
             },
         });
