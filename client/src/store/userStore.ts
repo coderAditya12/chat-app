@@ -7,7 +7,7 @@ interface userStore {
   user: {
     id?: string;
     email?: string;
-    fullname?: string;
+    fullName: string;
     bio: string;
     nativeLanguage: string;
     learningLanguage: string;

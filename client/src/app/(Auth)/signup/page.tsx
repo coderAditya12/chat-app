@@ -66,13 +66,16 @@ const SignUpPage = () => {
       // Send data to your API
       const response = await axios.post(
         "http://localhost:5000/api/auth/signup",
-        signupData
+        signupData,
+        {
+          withCredentials: true,
+        }
       );
 
       // Handle successful signup
       if (response.status === 201) {
         setUser(response.data.user);
-        router.push("/dashboard");
+        router.push("/onboard");
       }
     } catch (error: any) {
       // Handle Zod validation errors
