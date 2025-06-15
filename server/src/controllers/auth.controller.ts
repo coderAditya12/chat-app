@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import errorHandler from "../middleware/error.js";
 import { prisma } from "../utils/db.js";
+import { CustomRequest } from "../middleware/verify.js";
 
 // Interfaces
 export const signUp = async (
@@ -187,6 +188,39 @@ export const googleAuth = async (
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
     res.status(201).json({ message: "signup", newUser });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const onboardUser = async (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  console.log(req.user);
+  try {
+    const userId = req.params.id;
+    const {
+      fullName,
+      bio,
+      nativeLanguage,
+      learningLanguage,
+      location,
+      profilePic,
+    } = req.body;
+
+    const updatedUser = await prisma.user.update({
+      where: {
+        id:userId
+      },
+      data: {
+        ...req.body,
+        isOnboard: true,
+      },
+    });
+    console.log({...req.body});
+    res.status(200).json({ success: true, user: updatedUser });
   } catch (error) {
     next(error);
   }

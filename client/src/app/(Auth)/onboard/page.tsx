@@ -1,13 +1,21 @@
-"use client"
+"use client";
 import { LANGUAGES } from "@/constants";
 import userAuthStore from "@/store/userStore";
 import axios from "axios";
-import { CameraIcon, MapPinIcon, ShipWheelIcon, ShuffleIcon } from "lucide-react";
+import {
+  CameraIcon,
+  MapPinIcon,
+  Router,
+  ShipWheelIcon,
+  ShuffleIcon,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import toast, { LoaderIcon } from "react-hot-toast";
 
 const OnboardingPage = () => {
-  const user=userAuthStore(state=>state.user);
+  const { user, setUser } = userAuthStore((state) => state);
+  const router = useRouter();
   console.log("User data:", user);
   const [isPending, setIsPending] = useState(false);
 
@@ -20,21 +28,28 @@ const OnboardingPage = () => {
     profilePic: user?.profilePicture || "",
   });
 
-  
-
-  const handleSubmit =async (e:any) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
     try {
       setIsPending(true);
-      const response = await axios.post(`http://localhost:5000/api/auth/onboard/${user?.id}`,formState);
+      const response = await axios.post(
+        `http://localhost:5000/api/auth/onboard/${user?.id}`,
+        formState,
+        {
+          withCredentials: true,
+        }
+      );
       console.log("Onboarding response:", response);
-      
-      
+      if (response.status === 200) {
+        setUser(response.data.user);
+        toast.success("Bio updated successfully");
+        router.push("/");
+      }
+      setIsPending(false);
     } catch (error) {
       toast.error("Failed to complete onboarding. Please try again.");
+      setIsPending(false);
     }
-
-    
   };
 
   const handleRandomAvatar = () => {

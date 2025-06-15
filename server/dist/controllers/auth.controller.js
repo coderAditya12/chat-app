@@ -143,3 +143,24 @@ export const googleAuth = async (req, res, next) => {
         next(error);
     }
 };
+export const onboardUser = async (req, res, next) => {
+    console.log(req.user);
+    try {
+        const userId = req.params.id;
+        const { fullName, bio, nativeLanguage, learningLanguage, location, profilePic, } = req.body;
+        const updatedUser = await prisma.user.update({
+            where: {
+                id: userId
+            },
+            data: {
+                ...req.body,
+                isOnboard: true,
+            },
+        });
+        console.log({ ...req.body });
+        res.status(200).json({ success: true, user: updatedUser });
+    }
+    catch (error) {
+        next(error);
+    }
+};
