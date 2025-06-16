@@ -32,7 +32,7 @@ const userAuthStore = create<userStore>()(
               `${process.env.NEXT_PUBLIC_ROOT_URL}/auth/verify`,
               { withCredentials: true }
             );
-
+            console.log(response)
             if (!response.data.valid) {
               set({ isAuthenticated: false, user: null });
               return false;
@@ -40,7 +40,7 @@ const userAuthStore = create<userStore>()(
 
             set({
               isAuthenticated: true,
-              user: response.data.user,
+              
             });
             return true;
           } catch (error) {

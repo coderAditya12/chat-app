@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ShipWheelIcon } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -17,6 +17,7 @@ interface signupData {
   password: string;
 }
 const SignUpPage = () => {
+  
   const router = useRouter();
   const [signupData, setSignupData] = useState<signupData>({
     fullName: "",
@@ -29,8 +30,13 @@ const SignUpPage = () => {
     password?: string;
     general?: string;
   }>({});
-  const setUser = userAuthStore((state) => state.setUser);
+  const {setUser,isAuthenticated} = userAuthStore((state) => state);
   const [isPending, setIsPending] = useState(false);
+  useEffect(()=>{
+    if(isAuthenticated){
+      router.push("/");
+    }
+  },[])
 
   // Simple function to handle input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
