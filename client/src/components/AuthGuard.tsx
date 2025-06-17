@@ -1,7 +1,7 @@
 "use client";
 import userAuthStore from "@/store/userStore";
 import { usePathname, useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import PageLoader from "./PageLoader";
 
 // This flag and timer will live outside the component.
@@ -11,27 +11,23 @@ let authInterval: NodeJS.Timeout | null = null;
 
 const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   const path = usePathname();
-  console.log(path)
   const router = useRouter();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const { checkAuth } = userAuthStore((state) => state);
-  console.log("api called");
-
-  useEffect(() => {
+  useLayoutEffect(() => {
     const initAuth = async () => {
       if (!hasAuthStarted) {
-        hasAuthStarted = true; // mark as already started
+        hasAuthStarted = true;
 
         // AWAIT the checkAuth function since it's async
         const isValid = await checkAuth(); // check once on first load
         console.log("Initial auth check:", isValid);
 
-        if (!isValid && path==="/") {
+        if (!isValid && path === "/") {
           router.push("/signup");
           setIsLoading(false);
           return; // Exit early if not valid
         }
-        
 
         // set interval to call checkAuth every 14 minutes
         authInterval = setInterval(async () => {
@@ -51,12 +47,12 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
     // Cleanup function (optional, but good practice)
     return () => {
       // You can choose to clear the interval here if needed
-      // if (authInterval) {
-      //   clearInterval(authInterval);
-      //   hasAuthStarted = false;
-      // }
+      if (authInterval) {
+        clearInterval(authInterval);
+        hasAuthStarted = false;
+      }
     };
-  }, [checkAuth, router]);
+  }, []);
 
   if (isLoading) return <PageLoader />;
   return <>{children}</>;

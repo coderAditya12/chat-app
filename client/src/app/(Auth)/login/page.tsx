@@ -1,4 +1,5 @@
 "use client";
+import OAuth from "@/components/OAuth";
 import userAuthStore from "@/store/userStore";
 import axios from "axios";
 import { ShipWheelIcon } from "lucide-react";
@@ -135,6 +136,8 @@ const page = () => {
                 </div>
               </div>
             </form>
+            <div className="divider">OR</div>
+            <OAuth />
           </div>
         </div>
 
