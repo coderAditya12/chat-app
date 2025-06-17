@@ -1,6 +1,6 @@
 "use client";
 import userAuthStore from "@/store/userStore";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import PageLoader from "./PageLoader";
 
@@ -10,6 +10,8 @@ let hasAuthStarted = false;
 let authInterval: NodeJS.Timeout | null = null;
 
 const AuthGuard = ({ children }: { children: React.ReactNode }) => {
+  const path = usePathname();
+  console.log(path)
   const router = useRouter();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const { checkAuth } = userAuthStore((state) => state);
@@ -24,11 +26,12 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
         const isValid = await checkAuth(); // check once on first load
         console.log("Initial auth check:", isValid);
 
-        if (!isValid) {
+        if (!isValid && path==="/") {
           router.push("/signup");
           setIsLoading(false);
           return; // Exit early if not valid
         }
+        
 
         // set interval to call checkAuth every 14 minutes
         authInterval = setInterval(async () => {
