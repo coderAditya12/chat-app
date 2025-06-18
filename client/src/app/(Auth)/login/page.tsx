@@ -1,5 +1,6 @@
 "use client";
 import OAuth from "@/components/OAuth";
+import { useThemeStore } from "@/store/ThemeStore";
 import userAuthStore from "@/store/userStore";
 import axios from "axios";
 import { ShipWheelIcon } from "lucide-react";
@@ -16,6 +17,7 @@ type loginUserData = {
 };
 const page = () => {
   const router = useRouter();
+  const theme = useThemeStore((state) => state.theme);
   const { setUser } = userAuthStore((state) => state);
   const [loginData, setLoginData] = useState<loginUserData>({
     email: "",
@@ -35,9 +37,8 @@ const page = () => {
         }
       );
       if (response.status === 200) {
-        setUser(response.data.user,true);
-        
-        
+        setUser(response.data.user, true);
+
         toast.success("login successfull");
         router.push("/");
       }
@@ -53,7 +54,7 @@ const page = () => {
   return (
     <div
       className="h-screen flex items-center justify-center p-4 sm:p-6 md:p-8"
-      data-theme="forest"
+      // data-theme="acid"
     >
       <div className="border border-primary/25 flex flex-col lg:flex-row w-full max-w-5xl mx-auto bg-base-100 rounded-xl shadow-lg overflow-hidden">
         {/* LOGIN FORM SECTION */}

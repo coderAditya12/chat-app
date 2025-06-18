@@ -27,7 +27,6 @@ const userAuthStore = create<userStore>()(
         user: null,
 
         setUser: (user, validUser) => {
-          console.log("Setting user:", { user, validUser }); // Debug log
           set(() => ({
             user,
             isAuthenticated: validUser,
