@@ -35,7 +35,9 @@ const page = () => {
         }
       );
       if (response.status === 200) {
-        setUser(response.data.user);
+        setUser(response.data.user,true);
+        
+        
         toast.success("login successfull");
         router.push("/");
       }

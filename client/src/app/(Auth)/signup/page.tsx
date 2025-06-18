@@ -34,9 +34,9 @@ const SignUpPage = () => {
   const [isPending, setIsPending] = useState(false);
   useEffect(()=>{
     if(isAuthenticated){
-      router.push("/");
+      router.replace("/");
     }
-  },[])
+  },[isAuthenticated]);
 
   // Simple function to handle input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -80,7 +80,8 @@ const SignUpPage = () => {
 
       // Handle successful signup
       if (response.status === 201) {
-        setUser(response.data.user);
+        setUser(response.data.user,true);
+        // setAuthentication(true);
         router.push("/onboard");
       }
     } catch (error: any) {

@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import userAuthStore from "@/store/userStore";
 import { app } from "@/utils/firebase";
 import { AiFillGoogleCircle } from "react-icons/ai";
-import { IoReturnDownBack } from "react-icons/io5";
 
 const OAuth = () => {
   const router = useRouter();
@@ -39,17 +38,17 @@ const OAuth = () => {
       );
       console.log(response.data);
       if (response.data.message === "signup") {
-        setUser(response.data.newUser);
+        setUser(response.data.newUser,true);
         router.push("/onboard");
         return;
       }
       if (response.data.message === "signin" && !response.data.user.bio) {
-        setUser(response.data.user);
+        setUser(response.data.user,true);
         router.push("/onboard");
         return;
       }
       if (response.data.message === "signin" && response.data.user.bio) {
-        setUser(response.data.user);
+        setUser(response.data.user,true);
         router.push("/");
         return;
       }
