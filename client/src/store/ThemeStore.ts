@@ -6,6 +6,9 @@ type Store = {
 };
 
 export const useThemeStore = create<Store>()((set) => ({
-  theme: "coffee",
-  setTheme: (theme) => set(() => ({ theme })),
+  theme: localStorage.getItem("Dev-Chat-theme") || "coffee",
+  setTheme: (theme) => {
+    localStorage.setItem("Dev-Chat-theme", theme);
+    set({ theme });
+  },
 }));
