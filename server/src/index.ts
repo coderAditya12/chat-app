@@ -3,6 +3,7 @@ import cookieparser from "cookie-parser";
 import dotenv from "dotenv";
 import authRoute from "./routes/auth.route.js"
 import cors from "cors";
+import { prisma } from './utils/db.js';
 dotenv.config();
 const app = express();
 app.use(express.json());

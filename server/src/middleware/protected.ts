@@ -2,8 +2,14 @@ import { NextFunction, Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import errorHandler from "./error.js";
 
+export interface CustomJwtPayload extends JwtPayload {
+  id: string;
+  // Add other properties you store in your JWT
+  email?: string;
+  
+}
 export interface CustomRequest extends Request {
-  user?: JwtPayload | string;
+  user?: CustomJwtPayload;
 }
 export const protectedRoute = async (
   req: CustomRequest,
@@ -22,7 +28,7 @@ export const protectedRoute = async (
     }
 
     
-    req.user = decoded;
+    req.user = decoded as CustomJwtPayload
     next()
   } catch (error) {
     next(error);
