@@ -2,6 +2,7 @@ import express, { NextFunction, Request, Response } from 'express';
 import cookieparser from "cookie-parser";
 import dotenv from "dotenv";
 import authRoute from "./routes/auth.route.js"
+import chatRoute from "./routes/chat.route.js"
 import cors from "cors";
 import  userRouter from "./routes/user.route.js"
 dotenv.config();
@@ -17,6 +18,7 @@ app.use(
 );
 app.use("/api/auth", authRoute);
 app.use("/api/user",userRouter);
+app.use("/api/chat",chatRoute)
 interface customError extends Error {
   statusCode?: number;
 }

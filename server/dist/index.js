@@ -2,6 +2,7 @@ import express from 'express';
 import cookieparser from "cookie-parser";
 import dotenv from "dotenv";
 import authRoute from "./routes/auth.route.js";
+import chatRoute from "./routes/chat.route.js";
 import cors from "cors";
 import userRouter from "./routes/user.route.js";
 dotenv.config();
@@ -15,6 +16,7 @@ app.use(cors({
 }));
 app.use("/api/auth", authRoute);
 app.use("/api/user", userRouter);
+app.use("/api/chat", chatRoute);
 app.use((err, req, res, next) => {
     const statusCode = err.statusCode || 500;
     const message = err.message || "internal server error";

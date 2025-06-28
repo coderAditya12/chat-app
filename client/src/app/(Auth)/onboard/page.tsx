@@ -25,7 +25,7 @@ const OnboardingPage = () => {
     nativeLanguage: user?.nativeLanguage || "",
     learningLanguage: user?.learningLanguage || "",
     location: user?.location || "",
-    profilePic: user?.profilePicture || "",
+    profilePic: user?.profilePic || "",
   });
 
   const handleSubmit = async (e: any) => {
