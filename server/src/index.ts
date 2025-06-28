@@ -3,7 +3,7 @@ import cookieparser from "cookie-parser";
 import dotenv from "dotenv";
 import authRoute from "./routes/auth.route.js"
 import cors from "cors";
-import { prisma } from './utils/db.js';
+import  userRouter from "./routes/user.route.js"
 dotenv.config();
 const app = express();
 app.use(express.json());
@@ -16,6 +16,7 @@ app.use(
   })
 );
 app.use("/api/auth", authRoute);
+app.use("/api/user",userRouter);
 interface customError extends Error {
   statusCode?: number;
 }
@@ -29,5 +30,5 @@ app.use((err: customError, req: Request, res: Response, next: NextFunction) => {
   });
 });
 app.listen(5000,()=>{
-    console.log('Server is running on port 3000');
+    console.log('Server is running on port 5000');
 })

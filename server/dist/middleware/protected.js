@@ -12,6 +12,7 @@ export const protectedRoute = async (req, res, next) => {
             return errorHandler(res, 401, "Invalid token. Please log in again.");
         }
         req.user = decoded;
+        console.log("User from token:", req.user);
         next();
     }
     catch (error) {

@@ -1,64 +1,10 @@
-// // This is your Prisma schema file,
-// // learn more about it in the docs: https://pris.ly/d/prisma-schema
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
-// generator client {
-//   provider = "prisma-client-js"
-//   output    = "../dist/generated/prisma"
-// }
 
-// datasource db {
-//   provider = "postgresql"
-//   url      = env("DATABASE_URL")
-// }
-// model User{
-//   id String @id @default(cuid())
-//   fullName String 
-//   email String @unique
-//   password String 
-//   bio String? @default("")
-//   profilePic String? @default("")
-//   nativeLanguage String? @default("")
-//   learningLanguage String? @default("")
-//   location String? @default("")
-//   isOnboard Boolean @default(false)
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-
-//   sentMessages Message[] @relation("MessageSender")
-//   receivedMessages Message[] @relation("MessageReceiver")
-//   initiatorFriends Friend[] @relation("FriendshipInitiator")
-//   receiverFriends Friend[] @relation("FriendshipReceiver")
-// }
-// model Message{
-//   id Int @id @default(autoincrement())
-//   senderId String
-//   receiverId String
-//   content String
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-//   sender User @relation("MessageSender", fields: [senderId], references: [id])
-//   receiver User @relation("MessageReceiver", fields: [receiverId], references: [id])
-
-//   //indexs for faster queries
-//   @@index([senderId])
-//   @@index([receiverId])
-//   @@index([senderId,receiverId])
-// }
-// model Friend{
-//   id Int @id @default(autoincrement())
-//   userId String
-//   friendId String
-//   status String @default("pending") // pending, accepted, rejected
-//   createdAt DateTime @default(now())
-//   updatedAt DateTime @updatedAt
-//   user User @relation("FriendshipInitiator",fields:[userId],references: [id])
-//   friend User @relation("FriendshipReceiver",fields:[friendId],references: [id])
-//   @@unique([userId, friendId])
-// }
-// schema.prisma
 
 generator client {
   provider = "prisma-client-js"
