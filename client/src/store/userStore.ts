@@ -12,6 +12,7 @@ interface userStore {
     nativeLanguage: string;
     learningLanguage: string;
     location: string;
+    isOnboard: boolean;
     profilePic: string;
   } | null;
   setUser: (user: userStore["user"], validUser: boolean) => void;

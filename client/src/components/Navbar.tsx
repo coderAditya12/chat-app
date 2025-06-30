@@ -5,7 +5,7 @@ import { BellIcon, LogOutIcon, ShipWheelIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
-import React from "react";
+import React, {  useState } from "react";
 import ThemeSelector from "./ThemeSelector";
 import Image from "next/image";
 
@@ -13,25 +13,28 @@ const Navbar = () => {
   const { user, setUser } = userAuthStore((state) => state);
   const router = useRouter();
   const path = usePathname();
+  const [loading,setLoading]= useState(false);
   const isChatPage = path?.startsWith("/chat");
 
   const handleLogout = async () => {
     try {
+      setLoading(true);
       const response = await axios.get(
         "http://localhost:5000/api/auth/signout",
         { withCredentials: true }
       );
       console.log(response);
       if (response.status === 200) {
+        router.replace("/login");
         setUser(null, false);
-        // setAuthentication(false);
-        router.push("/login");
       }
     } catch (error) {
       setUser(null, false);
       // setAuthentication(false);
       router.push("/login");
       console.log(error);
+    }finally{
+      setLoading(false);
     }
   };
   return (
@@ -77,7 +80,7 @@ const Navbar = () => {
             <div className="w-9 rounded-full">
               
               <img
-              src={user?.profilePic || '/default-avatar.png'}
+              src={user?.profilePic}
               alt="User Avatar"
               onError={(e) => {
                 console.log('Image failed to load:', user?.profilePic);

@@ -1,4 +1,5 @@
 "use client";
+import { withAuthAndOnboarding } from "@/components/HOC";
 import { LANGUAGES } from "@/constants";
 import userAuthStore from "@/store/userStore";
 import axios from "axios";
@@ -16,7 +17,6 @@ import toast, { LoaderIcon } from "react-hot-toast";
 const OnboardingPage = () => {
   const { user, setUser } = userAuthStore((state) => state);
   const router = useRouter();
-  console.log("User data:", user);
   const [isPending, setIsPending] = useState(false);
 
   const [formState, setFormState] = useState({
@@ -230,4 +230,4 @@ const OnboardingPage = () => {
     </div>
   );
 };
-export default OnboardingPage;
+export default withAuthAndOnboarding(OnboardingPage);

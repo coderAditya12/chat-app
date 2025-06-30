@@ -32,10 +32,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeWrapper>
+          {/* 🔥 SOLUTION: Move AuthGuard to wrap everything */}
           <AuthGuard>
+            {/* ConditionalLayout (navbar/sidebar) is now INSIDE AuthGuard */}
             <ConditionalLayout>{children}</ConditionalLayout>
           </AuthGuard>
-
           <Toaster />
         </ThemeWrapper>
       </body>

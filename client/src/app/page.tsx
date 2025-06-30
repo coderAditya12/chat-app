@@ -1,11 +1,12 @@
-import Link from "next/link";
-import React from "react";
-const page = () => {
+// app/dashboard/page.tsx
+"use client";
+import { withAuthAndOnboarding } from "@/components/HOC";
+function Home() {
   return (
     <div>
-      <Link href="/signup">signup</Link>
+      <h1>Your Dashboard</h1>
+      {/* Protected content */}
     </div>
   );
-};
-
-export default page;
+}
+export default withAuthAndOnboarding(Home);

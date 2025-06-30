@@ -1,12 +1,11 @@
 import React, { ReactNode } from "react";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
-
 // Define the type for props
 type LayoutProps = {
   children: ReactNode;
-  showSidebar?: boolean;}
-
+  showSidebar?: boolean;
+};
 const Layout = ({ children, showSidebar = true }: LayoutProps) => {
   return (
     <div className="min-h-screen">
@@ -20,5 +19,4 @@ const Layout = ({ children, showSidebar = true }: LayoutProps) => {
     </div>
   );
 };
-
 export default Layout;
