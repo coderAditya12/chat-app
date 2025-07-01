@@ -38,17 +38,17 @@ const OAuth = () => {
       );
       console.log(response.data);
       if (response.data.message === "signup") {
-        setUser(response.data.newUser,true);
+        setUser(response.data.newUser, true);
         router.push("/onboard");
         return;
       }
       if (response.data.message === "signin" && !response.data.user.bio) {
-        setUser(response.data.user,true);
+        setUser(response.data.user, true);
         router.push("/onboard");
         return;
       }
       if (response.data.message === "signin" && response.data.user.bio) {
-        setUser(response.data.user,true);
+        setUser(response.data.user, true);
         router.push("/");
         return;
       }
