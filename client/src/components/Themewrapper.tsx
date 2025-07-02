@@ -1,7 +1,7 @@
-// components/ThemeWrapper.tsx
+
 "use client";
 import { useThemeStore } from "@/store/ThemeStore";
-import { useEffect } from "react";
+
 
 const ThemeWrapper = ({ children }: { children: React.ReactNode }) => {
   const { theme } = useThemeStore();

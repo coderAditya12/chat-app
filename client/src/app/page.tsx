@@ -3,6 +3,7 @@ import FriendCard, { getLanguageFlag } from "@/components/FriendCard";
 import { withAuthAndOnboarding } from "@/components/HOC";
 import NoFriendsFound from "@/components/NoFriendsFound";
 import { API_URL } from "@/lib/api";
+import { capitialize } from "@/lib/utilis";
 import axios from "axios";
 import {
   CheckCircleIcon,
@@ -14,9 +15,6 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 
 // Utility function from the original code
-const capitialize = (str: string) => {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-};
 
 const HomePage = () => {
   // State management (replacing TanStack Query)
@@ -401,5 +399,4 @@ const HomePage = () => {
     </div>
   );
 };
-
 export default withAuthAndOnboarding(HomePage);
