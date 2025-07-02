@@ -25,7 +25,7 @@ const FriendCard = ({ friend }: { friend: any }) => {
             Learning: {friend.learningLanguage}
           </span>
         </div>
-        <Link href={`/chat/${friend._id}`} className="btn btn-outline w-full">
+        <Link href={`/chat/${friend.id}`} className="btn btn-outline w-full">
           Message
         </Link>
       </div>

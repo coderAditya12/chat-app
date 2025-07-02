@@ -5,7 +5,7 @@ type Store = {
   setTheme: (theme: string) => void;
 };
 
-export const useThemeStore = create<Store>()((set) => ({
+export const useThemeStore = create<Store>((set) => ({
   theme: localStorage.getItem("Dev-Chat-theme") || "coffee",
   setTheme: (theme) => {
     localStorage.setItem("Dev-Chat-theme", theme);
