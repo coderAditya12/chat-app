@@ -212,16 +212,36 @@ export const onboardUser = async (
 
     const updatedUser = await prisma.user.update({
       where: {
-        id:userId
+        id: userId,
       },
       data: {
         ...req.body,
         isOnboard: true,
       },
     });
-    console.log({...req.body});
+    console.log({ ...req.body });
     res.status(200).json({ success: true, user: updatedUser });
   } catch (error) {
+    next(error);
+  }
+};
+export const verifyUser = async (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const userId = req.user?.id;
+  console.log("user id", userId);
+  try {
+    const authUser = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    console.log(authUser);
+    res.status(200).json({ valid: true, user: authUser });
+  } catch (error) {
+    console.log("errror", error);
     next(error);
   }
 };

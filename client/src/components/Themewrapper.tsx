@@ -1,8 +1,5 @@
-
 "use client";
 import { useThemeStore } from "@/store/ThemeStore";
-
-
 const ThemeWrapper = ({ children }: { children: React.ReactNode }) => {
   const { theme } = useThemeStore();
 

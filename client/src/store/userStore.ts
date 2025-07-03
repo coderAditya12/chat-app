@@ -57,7 +57,6 @@ const userAuthStore = create<userStore>()(
               isAuthenticated: true,
               user: get().user || response.data.user, // Use response user data or keep existing
             });
-
             return true;
           } catch (error) {
             console.error("Auth check failed:", error); // Debug log
