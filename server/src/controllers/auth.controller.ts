@@ -55,6 +55,7 @@ export const signUp = async (
     });
     res.status(201).json({ message: "signup", newUser });
   } catch (error) {
+    console.log("signup error");
     next(error);
   }
 };

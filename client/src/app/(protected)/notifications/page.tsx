@@ -16,7 +16,6 @@
 //       const response = await axios.get(`${API_URL}/user/getFriend-requets`, {
 //         withCredentials: true,
 //       });
-//       console.log(response.data.incomingRequests);
 //       setIncomingRequests(response.data.incomingRequests);
 //     } catch (error) {
 //       console.error("Error fetching notifications:", error);
@@ -169,12 +168,205 @@
 // };
 
 // export default withAuthAndOnboarding(NotificationPage);
-import React from 'react'
 
-const page = () => {
+"use client";
+import { withAuthAndOnboarding } from "@/components/HOC";
+import NoNotificationsFound from "@/components/NoNotification";
+import { API_URL } from "@/lib/api";
+import axios from "axios";
+import {
+  BellIcon,
+  ClockIcon,
+  MessageSquareIcon,
+  UserCheckIcon,
+} from "lucide-react";
+import React, { useEffect, useState } from "react";
+
+const NotificationPage = () => {
+  const [loading, setLoading] = useState(true);
+  const [incomingRequests, setIncomingRequests] = useState<any[]>([]);
+  const [acceptedRequest, setAcceptedRequest] = useState<any[]>([]);
+  const [pending, setPending] = useState(false);
+
+  const getFriendRequest = async () => {
+    console.log("Fetching friend requests...");
+    try {
+      const response = await axios.get(`${API_URL}/user/getFriend-requets`, {
+        withCredentials: true,
+      });
+
+      console.log("Friend requests fetched:", response.data);
+
+      setIncomingRequests(response.data.incomingRequests || []);
+      setAcceptedRequest(response.data.acceptedRequests || []);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const acceptRequest = async (id: any) => {
+    console.log("Accepting friend request with id:", id);
+    setPending(true);
+    try {
+      const response = await axios.put(
+        `${API_URL}/user/friends-request/${id}/accept`,
+        {}, // Empty body
+        {
+          withCredentials: true,
+        }
+      );
+
+      console.log("Friend request accepted:", response.data);
+
+      // Optionally update UI after accepting
+      setIncomingRequests((prev) =>
+        prev.filter((request) => request.id !== id)
+      );
+      setAcceptedRequest((prev) => [...prev, response.data.acceptedRequest]);
+    } catch (error) {
+      console.error("Error accepting request:", error);
+    } finally {
+      setPending(false);
+    }
+  };
+
+  useEffect(() => {
+    getFriendRequest();
+  }, []);
+
   return (
-    <div>page</div>
-  )
-}
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="container mx-auto max-w-4xl space-y-8">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-6">
+          Notifications
+        </h1>
 
-export default page
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <span className="loading loading-spinner loading-lg"></span>
+          </div>
+        ) : (
+          <>
+            {incomingRequests.length > 0 && (
+              <section className="space-y-4">
+                <h2 className="text-xl font-semibold flex items-center gap-2">
+                  <UserCheckIcon className="h-5 w-5 text-primary" />
+                  Friend Requests
+                  <span className="badge badge-primary ml-2">
+                    {incomingRequests.length}
+                  </span>
+                </h2>
+
+                <div className="space-y-3">
+                  {incomingRequests.map((request) => (
+                    <div
+                      key={request.id}
+                      className="card bg-base-200 shadow-sm hover:shadow-md transition-shadow"
+                    >
+                      <div className="card-body p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="avatar w-14 h-14 rounded-full bg-base-300">
+                              <img
+                                src={request.user?.profilePic}
+                                alt={request.user?.fullName}
+                              />
+                            </div>
+                            <div>
+                              <h3 className="font-semibold">
+                                {request.user.fullName}
+                              </h3>
+                              <div className="flex flex-wrap gap-1.5 mt-1">
+                                <span className="badge badge-secondary badge-sm">
+                                  Native: {request.user.nativeLanguage}
+                                </span>
+                                <span className="badge badge-outline badge-sm">
+                                  Learning: {request.user.learningLanguage}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <button
+                            className="btn btn-primary btn-sm"
+                            onClick={() => {
+                              console.log(
+                                "Accept button clicked for:",
+                                request.id
+                              );
+                              acceptRequest(request.id);
+                            }}
+                            disabled={pending}
+                          >
+                            Accept
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* ACCEPTED REQS NOTIFICATONS */}
+            {acceptedRequest.length > 0 && (
+              <section className="space-y-4">
+                <h2 className="text-xl font-semibold flex items-center gap-2">
+                  <BellIcon className="h-5 w-5 text-success" />
+                  New Connections
+                </h2>
+
+                <div className="space-y-3">
+                  {acceptedRequest.map((notification) => (
+                    <div
+                      key={notification.id}
+                      className="card bg-base-200 shadow-sm"
+                    >
+                      <div className="card-body p-4">
+                        <div className="flex items-start gap-3">
+                          <div className="avatar mt-1 size-10 rounded-full">
+                            <img
+                              src={notification.
+                              friend.profilePic}
+                              alt={notification.friend.fullName}
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="font-semibold">
+                              {notification.friend.fullName}
+                            </h3>
+                            <p className="text-sm my-1">
+                              {notification.friend.fullName} accepted your
+                              friend request
+                            </p>
+                            <p className="text-xs flex items-center opacity-70">
+                              <ClockIcon className="h-3 w-3 mr-1" />
+                              Recently
+                            </p>
+                          </div>
+                          <div className="badge badge-success">
+                            <MessageSquareIcon className="h-3 w-3 mr-1" />
+                            New Friend
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {incomingRequests.length === 0 && acceptedRequest.length === 0 && (
+              <NoNotificationsFound/>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+    
+  );
+};
+
+export default withAuthAndOnboarding(NotificationPage);

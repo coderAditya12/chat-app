@@ -10,14 +10,12 @@ import OAuth from "@/components/OAuth";
 import userAuthStore from "@/store/userStore";
 import { signUpSchema } from "@/utils/schema";
 
-
 interface signupData {
   fullName: string;
   email: string;
   password: string;
 }
 const SignUpPage = () => {
-  
   const router = useRouter();
   const [signupData, setSignupData] = useState<signupData>({
     fullName: "",
@@ -30,13 +28,13 @@ const SignUpPage = () => {
     password?: string;
     general?: string;
   }>({});
-  const {setUser,isAuthenticated} = userAuthStore((state) => state);
+  const { setUser, isAuthenticated } = userAuthStore((state) => state);
   const [isPending, setIsPending] = useState(false);
-  useEffect(()=>{
-    if(isAuthenticated){
+  useEffect(() => {
+    if (isAuthenticated) {
       router.replace("/");
     }
-  },[isAuthenticated]);
+  }, [isAuthenticated]);
 
   // Simple function to handle input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -77,38 +75,16 @@ const SignUpPage = () => {
           withCredentials: true,
         }
       );
-
+      console.log("signup response", response);
       // Handle successful signup
-      if (response.status === 201) {
-        setUser(response.data.user,true);
-        // setAuthentication(true);
-        router.push("/onboard");
+      if (response.status === 201 && !response.data.user.isOnboard) {
+        setUser(response.data.user, true);
+        router.replace("/onboard");
+        
       }
     } catch (error: any) {
       // Handle Zod validation errors
-      if (error.name === "ZodError") {
-        // Convert Zod errors to a simple object
-        const newErrors: any = {};
-        error.errors.forEach((err: any) => {
-          // Get the field name from the path
-          const field = err.path[0];
-          newErrors[field] = err.message;
-        });
-        setErrors(newErrors);
-      }
-      // Handle API errors
-      else if (axios.isAxiosError(error)) {
-        console.log(error);
-        if (error.response?.status === 409) {
-          setErrors({ email: "An account with this email already exists" });
-        } else {
-          setErrors({
-            general: error.response?.data?.message,
-          });
-        }
-      } else {
-        setErrors({ general: "An unexpected error occurred" });
-      }
+      setErrors(error);
     } finally {
       setIsPending(false);
     }

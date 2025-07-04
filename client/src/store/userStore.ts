@@ -5,8 +5,8 @@ import { devtools, persist } from "zustand/middleware";
 interface userStore {
   isAuthenticated: boolean;
   user: {
-    id?: string;
-    email?: string;
+    id: string;
+    email: string;
     fullName: string;
     bio: string;
     nativeLanguage: string;
@@ -14,7 +14,7 @@ interface userStore {
     location: string;
     isOnboard: boolean;
     profilePic: string;
-  } | null;
+  } |null;
   setUser: (user: userStore["user"], validUser: boolean) => void;
   logout: () => void;
   checkAuth: () => Promise<boolean>;
