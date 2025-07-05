@@ -23,14 +23,14 @@ export const initializeSocket = (server: any) => {
         // Join the room
         socket.join(roomName);
         console.log(`User ${userId} joined room: ${roomName}`);
-
-        // Optional: Notify about room members
-        const roomSize = io.sockets.adapter.rooms.get(roomName)?.size || 0;
-        console.log(`Room ${roomName} now has ${roomSize} users`);
       }
     );
 
-    socket.on("sendMessage", () => {}); // Fixed typo: "sendMesage" → "sendMessage"
+    socket.on("sendMessage", ({ userId, targetUserId, text }) => {
+      const roomName = [userId, targetUserId].sort().join("-");
+      console.log("messsage recieved", text);
+      io.to(roomName).emit("messageRecieved", { text,sender:userId });
+    });
 
     socket.on("disconnect", () => {
       console.log("user disconnected", socket.id);

@@ -21,8 +21,12 @@
 import userAuthStore from "@/store/userStore";
 import { createSocketConnection } from "@/utils/socket";
 import { useParams } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Send } from "lucide-react";
+type Message = {
+  text: string;
+  sender: string;
+};
 
 const page = () => {
   const params = useParams();
@@ -30,47 +34,43 @@ const page = () => {
   const { user } = userAuthStore((state) => state);
   const userId = user?.id;
 
-  const [messages, setMessages] = useState([
-    { id: 1, text: "Hello!", sender: "other" },
-    { id: 2, text: "Hi there!", sender: "me" },
-    { id: 3, text: "How are you?", sender: "other" },
-  ]);
-
-  const [newMessage, setNewMessage] = useState("");
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [newMessage, setNewMessage] = useState<string>("");
+  const socketRef = useRef<any>(null);
 
   useEffect(() => {
     const socket = createSocketConnection();
-    
+    if (!socket) return;
+
+    socketRef.current = socket;
+
     socket.emit("joinChat", { userId, targetUserId });
 
-    // Add your socket event listeners here
-    // socket.on("receiveMessage", handleReceiveMessage);
+    socket.on(
+      "messageRecieved",
+      ({ text, sender }: { text: string; sender: string }) => {
+        setMessages((prevMessages) => [...prevMessages, { text, sender }]);
+      }
+    );
 
     return () => {
       socket.disconnect();
+      socketRef.current = null;
     };
   }, [userId, targetUserId]);
 
   const handleSendMessage = () => {
-    if (newMessage.trim()) {
-      const message = {
-        id: Date.now(),
-        text: newMessage,
-        sender: "me",
-      };
-
-      setMessages((prev) => [...prev, message]);
-      setNewMessage("");
-
-      // Add your socket emit here
-      // socket.emit("sendMessage", { text: newMessage, targetUserId });
-    }
+    socketRef.current.emit("sendMessage", {
+      userId,
+      targetUserId,
+      text: newMessage,
+    });
   };
-
-  const handleKeyPress = (e:any) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
       handleSendMessage();
+      setNewMessage("");
     }
   };
 
@@ -80,14 +80,14 @@ const page = () => {
       <div className="flex-1 overflow-y-auto p-4 space-y-2">
         {messages.map((message) => (
           <div
-            key={message.id}
+            key={Math.random()}
             className={`flex ${
-              message.sender === "me" ? "justify-end" : "justify-start"
+              message.sender === user?.id ? "justify-end" : "justify-start"
             }`}
           >
             <div
               className={`max-w-xs px-3 py-2 rounded-lg ${
-                message.sender === "me"
+                message.sender === user?.id
                   ? "bg-blue-600 text-white"
                   : "bg-gray-700 text-gray-100"
               }`}

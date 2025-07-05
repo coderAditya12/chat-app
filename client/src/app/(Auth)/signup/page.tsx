@@ -77,7 +77,7 @@ const SignUpPage = () => {
       );
       console.log("signup response", response);
       // Handle successful signup
-      if (response.status === 201 && !response.data.user.isOnboard) {
+      if (response.status === 201 && !response.data.newUser.isOnboard) {
         setUser(response.data.user, true);
         router.replace("/onboard");
         
