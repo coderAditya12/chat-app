@@ -113,7 +113,7 @@ const HomePage = () => {
 
         setLoadingOutgoingReqs(true);
         const outgoingData = await getOutgoingFriendReqs();
-        console.log("outgoing data", outgoingData)
+        
         if (isMounted) {
           setOutgoingFriendReqs(outgoingData);
           setLoadingOutgoingReqs(false);
@@ -199,10 +199,7 @@ const HomePage = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {friends.map((friend) => {
               const friendId = friend._id || friend.id;
-              console.log("🧑‍🤝‍🧑 Rendering friend:", {
-                id: friendId,
-                name: friend.fullName,
-              });
+             
               return <FriendCard key={friendId} friend={friend} />;
             })}
           </div>

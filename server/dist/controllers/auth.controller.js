@@ -145,7 +145,6 @@ export const googleAuth = async (req, res, next) => {
     }
 };
 export const onboardUser = async (req, res, next) => {
-    console.log(req.user);
     try {
         const userId = req.params.id;
         const { fullName, bio, nativeLanguage, learningLanguage, location, profilePic, } = req.body;
@@ -158,7 +157,6 @@ export const onboardUser = async (req, res, next) => {
                 isOnboard: true,
             },
         });
-        console.log({ ...req.body });
         res.status(200).json({ success: true, user: updatedUser });
     }
     catch (error) {
@@ -167,14 +165,12 @@ export const onboardUser = async (req, res, next) => {
 };
 export const verifyUser = async (req, res, next) => {
     const userId = req.user?.id;
-    console.log("user id", userId);
     try {
         const authUser = await prisma.user.findUnique({
             where: {
                 id: userId,
             },
         });
-        console.log(authUser);
         res.status(200).json({ valid: true, user: authUser });
     }
     catch (error) {

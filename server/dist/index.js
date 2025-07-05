@@ -1,10 +1,12 @@
-import express from 'express';
+import express from "express";
 import cookieparser from "cookie-parser";
 import dotenv from "dotenv";
 import authRoute from "./routes/auth.route.js";
 import chatRoute from "./routes/chat.route.js";
 import cors from "cors";
 import userRouter from "./routes/user.route.js";
+import { createServer } from "http";
+import { initializeSocket } from "./utils/socket.js";
 dotenv.config();
 const app = express();
 app.use(express.json());
@@ -26,6 +28,8 @@ app.use((err, req, res, next) => {
         message,
     });
 });
-app.listen(5000, () => {
-    console.log('Server is running on port 5000');
+const httpServer = createServer(app);
+initializeSocket(httpServer);
+httpServer.listen(5000, () => {
+    console.log("Server is running on port 5000");
 });

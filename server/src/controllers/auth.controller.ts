@@ -199,7 +199,7 @@ export const onboardUser = async (
   res: Response,
   next: NextFunction
 ) => {
-  console.log(req.user);
+
   try {
     const userId = req.params.id;
     const {
@@ -220,7 +220,7 @@ export const onboardUser = async (
         isOnboard: true,
       },
     });
-    console.log({ ...req.body });
+ 
     res.status(200).json({ success: true, user: updatedUser });
   } catch (error) {
     next(error);
@@ -232,14 +232,13 @@ export const verifyUser = async (
   next: NextFunction
 ) => {
   const userId = req.user?.id;
-  console.log("user id", userId);
+
   try {
     const authUser = await prisma.user.findUnique({
       where: {
         id: userId,
       },
     });
-    console.log(authUser);
     res.status(200).json({ valid: true, user: authUser });
   } catch (error) {
     console.log("errror", error);
