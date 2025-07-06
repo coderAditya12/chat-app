@@ -30,11 +30,6 @@ const SignUpPage = () => {
   }>({});
   const { setUser, isAuthenticated } = userAuthStore((state) => state);
   const [isPending, setIsPending] = useState(false);
-  useEffect(() => {
-    if (isAuthenticated) {
-      router.replace("/");
-    }
-  }, [isAuthenticated]);
 
   // Simple function to handle input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,7 +61,6 @@ const SignUpPage = () => {
       // If validation passes (no error thrown), proceed with submission
       setIsPending(true);
       console.log("Submitting signup data:", signupData);
-
       // Send data to your API
       const response = await axios.post(
         "http://localhost:5000/api/auth/signup",
@@ -77,10 +71,16 @@ const SignUpPage = () => {
       );
       console.log("signup response", response);
       // Handle successful signup
-      if (response.status === 201 && !response.data.newUser.isOnboard) {
-        setUser(response.data.user, true);
-        router.replace("/onboard");
-        
+      if (response.status === 201) {
+        // Always set the user data first
+        setUser(response.data.newUser, true); // Use newUser, not user
+
+        // Then redirect based on onboarding status
+        if (!response.data.newUser.isOnboard) {
+          router.replace("/onboard");
+        } else {
+          router.replace("/home");
+        }
       }
     } catch (error: any) {
       // Handle Zod validation errors

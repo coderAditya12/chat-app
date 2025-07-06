@@ -41,7 +41,7 @@ const OnboardingPage = () => {
       );
       console.log("Onboarding response:", response);
       if (response.status === 200) {
-        setUser(response.data.user,true);
+        setUser(response.data.user, true);
         toast.success("Bio updated successfully");
         router.push("/");
       }
@@ -108,6 +108,7 @@ const OnboardingPage = () => {
                 type="text"
                 name="fullName"
                 value={formState.fullName}
+                required
                 onChange={(e) =>
                   setFormState({ ...formState, fullName: e.target.value })
                 }
@@ -124,6 +125,7 @@ const OnboardingPage = () => {
               <textarea
                 name="bio"
                 value={formState.bio}
+                required
                 onChange={(e) =>
                   setFormState({ ...formState, bio: e.target.value })
                 }
@@ -140,6 +142,7 @@ const OnboardingPage = () => {
                   <span className="label-text">Native Language</span>
                 </label>
                 <select
+                  required
                   name="nativeLanguage"
                   value={formState.nativeLanguage}
                   onChange={(e) =>
@@ -165,6 +168,7 @@ const OnboardingPage = () => {
                   <span className="label-text">Learning Language</span>
                 </label>
                 <select
+                  required
                   name="learningLanguage"
                   value={formState.learningLanguage}
                   onChange={(e) =>
@@ -194,6 +198,7 @@ const OnboardingPage = () => {
                 <MapPinIcon className="absolute top-1/2 transform -translate-y-1/2 left-3 size-5 text-base-content opacity-70" />
                 <input
                   type="text"
+                  required
                   name="location"
                   value={formState.location}
                   onChange={(e) =>
