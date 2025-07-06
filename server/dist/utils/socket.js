@@ -1,4 +1,5 @@
 import { Server } from "socket.io";
+import { prisma } from "./db.js";
 export const initializeSocket = (server) => {
     const io = new Server(server, {
         cors: {
@@ -17,10 +18,41 @@ export const initializeSocket = (server) => {
             socket.join(roomName);
             console.log(`User ${userId} joined room: ${roomName}`);
         });
-        socket.on("sendMessage", ({ userId, targetUserId, text }) => {
+        socket.on("sendMessage", async ({ userId, targetUserId, text, }) => {
             const roomName = [userId, targetUserId].sort().join("-");
             console.log("messsage recieved", text);
-            io.to(roomName).emit("messageRecieved", { text, sender: userId });
+            try {
+                const newMessage = await prisma.message.create({
+                    data: {
+                        senderId: userId,
+                        receiverId: targetUserId,
+                        content: text,
+                    },
+                    include: {
+                        sender: {
+                            select: {
+                                id: true,
+                                fullName: true,
+                                profilePic: true,
+                            },
+                        },
+                        receiver: {
+                            select: {
+                                id: true,
+                                fullName: true,
+                                profilePic: true,
+                            },
+                        },
+                    },
+                });
+                console.log(newMessage);
+                io.to(roomName).emit("messageRecieved", {
+                    ...newMessage,
+                });
+            }
+            catch (error) {
+                console.log("error in sending the message", error);
+            }
         });
         socket.on("disconnect", () => {
             console.log("user disconnected", socket.id);

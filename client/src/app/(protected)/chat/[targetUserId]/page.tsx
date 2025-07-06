@@ -23,10 +23,23 @@ import { createSocketConnection } from "@/utils/socket";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState, useRef } from "react";
 import { Send } from "lucide-react";
-type Message = {
-  text: string;
-  sender: string;
-};
+interface UserInfo {
+  id: string;
+  fullName: string;
+  profilePic: string;
+}
+
+interface Message {
+  id: number;
+  senderId: string;
+  receiverId: string;
+  content: string;
+  createdAt: string; // ISO date string
+  updatedAt: string;
+  sender: UserInfo;
+  receiver: UserInfo;
+}
+
 
 const page = () => {
   const params = useParams();
@@ -48,8 +61,9 @@ const page = () => {
 
     socket.on(
       "messageRecieved",
-      ({ text, sender }: { text: string; sender: string }) => {
-        setMessages((prevMessages) => [...prevMessages, { text, sender }]);
+      ({...newMessage}) => {
+        console.log(newMessage)
+        setMessages((prevMessages) => [...prevMessages,newMessage]);
       }
     );
 
@@ -82,17 +96,17 @@ const page = () => {
           <div
             key={Math.random()}
             className={`flex ${
-              message.sender === user?.id ? "justify-end" : "justify-start"
+              message.senderId === user?.id ? "justify-end" : "justify-start"
             }`}
           >
             <div
               className={`max-w-xs px-3 py-2 rounded-lg ${
-                message.sender === user?.id
+                message.senderId === user?.id
                   ? "bg-blue-600 text-white"
                   : "bg-gray-700 text-gray-100"
               }`}
             >
-              {message.text}
+              {message.content}
             </div>
           </div>
         ))}
