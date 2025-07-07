@@ -329,7 +329,7 @@ const NotificationPage = () => {
                           <div className="avatar mt-1 size-10 rounded-full">
                             <img
                               src={notification.
-                              friend.profilePic}
+                              friend?.profilePic}
                               alt={notification.friend.fullName}
                             />
                           </div>

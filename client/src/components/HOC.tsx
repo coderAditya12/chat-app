@@ -86,7 +86,7 @@ export function withAuthAndOnboarding(Component: React.ComponentType) {
 
       // If user is authenticated and onboarded, but trying to access onboard page
       if (user && user.isOnboard && pathname.startsWith("/onboard")) {
-        router.replace("/home");
+        router.replace("/");
         return () => clearTimeout(timer);
       }
 

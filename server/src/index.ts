@@ -7,7 +7,6 @@ import chatRoute from "./routes/chat.route.js";
 import cors from "cors";
 import userRouter from "./routes/user.route.js";
 import { createServer } from "http";
-import { Server } from "socket.io";
 import { initializeSocket } from "./utils/socket.js";
 dotenv.config();
 const app = express();
@@ -22,7 +21,7 @@ app.use(
 );
 app.use("/api/auth", authRoute);
 app.use("/api/user", userRouter);
-app.use("/api/chat", chatRoute);
+app.use("/api", chatRoute);
 interface customError extends Error {
   statusCode?: number;
 }

@@ -142,7 +142,7 @@ const OAuth = () => {
         if (!response.data.user.isOnboard) {
           router.replace("/onboard");
         } else {
-          router.replace("/home");
+          router.replace("/");
         }
         return;
       }

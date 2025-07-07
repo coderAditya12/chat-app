@@ -9,7 +9,6 @@ import { useRouter } from "next/navigation";
 import OAuth from "@/components/OAuth";
 import userAuthStore from "@/store/userStore";
 import { signUpSchema } from "@/utils/schema";
-
 interface signupData {
   fullName: string;
   email: string;
@@ -79,7 +78,7 @@ const SignUpPage = () => {
         if (!response.data.newUser.isOnboard) {
           router.replace("/onboard");
         } else {
-          router.replace("/home");
+          router.replace("/");
         }
       }
     } catch (error: any) {

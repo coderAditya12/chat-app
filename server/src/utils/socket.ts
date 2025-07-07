@@ -30,16 +30,27 @@ export const initializeSocket = (server: any) => {
     socket.on(
       "sendMessage",
       async ({
+        id,
         userId,
         targetUserId,
         text,
+        profilePic
       }: {
+        id:number
         userId: string;
         targetUserId: string;
         text: string;
+        profilePic:string
       }) => {
         const roomName = [userId, targetUserId].sort().join("-");
         console.log("messsage recieved", text);
+        io.to(roomName).emit("messageRecieved", {
+          id,
+          senderId:userId,
+          recieverId:targetUserId,
+          text,
+          profilePic
+        });
         try {
           const newMessage = await prisma.message.create({
             data: {
@@ -65,9 +76,7 @@ export const initializeSocket = (server: any) => {
             },
           });
           console.log(newMessage);
-          io.to(roomName).emit("messageRecieved", {
-            ...newMessage,
-          });
+          
         } catch (error) {
           console.log("error in sending the message", error);
         }

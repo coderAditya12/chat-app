@@ -20,6 +20,7 @@ export const protectedRoute = async (
     const token = req.cookies.accesstoken;
 
     if (!token) {
+
      return  errorHandler(res, 401, "Unauthorized access. Please log in.");
        
     }
