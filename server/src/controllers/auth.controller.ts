@@ -5,6 +5,7 @@ import bcrypt from "bcrypt";
 import errorHandler from "../middleware/error.js";
 import { prisma } from "../utils/db.js";
 import { CustomRequest } from "../middleware/verify.js";
+import { upsertStreamUser } from "../utils/stream.js";
 
 // Interfaces
 export const signUp = async (
@@ -24,13 +25,26 @@ export const signUp = async (
       return errorHandler(res, 400, "User already exists");
     }
     const hashedPassword = await bcrypt.hash(password, 10);
+    const idx = Math.floor(Math.random() * 100) + 1; // generate a num between 1-100
+    const randomAvatar = `https://avatar.iran.liara.run/public/${idx}.png`;
     const newUser = await prisma.user.create({
       data: {
         email,
         fullName,
         password: hashedPassword,
+        profilePic: randomAvatar,
       },
     });
+    try {
+      await upsertStreamUser({
+        id: newUser.id,
+        name: newUser.fullName,
+        image: newUser.profilePic || "",
+      });
+      console.log(`Stream user created for ${newUser.fullName}`);
+    } catch (error) {
+      console.log("Error creating Stream user:", error);
+    }
     const accessToken = jwt.sign(
       { id: newUser.id, email: newUser.email },
       process.env.JWT_SECRET as string,
@@ -159,13 +173,26 @@ export const googleAuth = async (
       Math.random().toString(36).slice(-8) +
       Math.random().toString(36).slice(-8);
     const hashedPassword = await bcrypt.hash(generatedPassword, 10);
+    const idx = Math.floor(Math.random() * 100) + 1; // generate a num between 1-100
+    const randomAvatar = `https://avatar.iran.liara.run/public/${idx}.png`;
     const newUser = await prisma.user.create({
       data: {
         email,
         fullName,
         password: hashedPassword,
+        profilePic: randomAvatar,
       },
     });
+    try {
+      await upsertStreamUser({
+        id: newUser.id.toString(),
+        name: newUser.fullName,
+        image: newUser.profilePic || "",
+      });
+      console.log(`Stream user created for ${newUser.fullName}`);
+    } catch (error) {
+      console.log("Error creating Stream user:", error);
+    }
     const accessToken = jwt.sign(
       { id: newUser.id, email: newUser.email },
       process.env.JWT_SECRET as string,
@@ -199,7 +226,6 @@ export const onboardUser = async (
   res: Response,
   next: NextFunction
 ) => {
-
   try {
     const userId = req.params.id;
     const {
@@ -220,7 +246,7 @@ export const onboardUser = async (
         isOnboard: true,
       },
     });
- 
+
     res.status(200).json({ success: true, user: updatedUser });
   } catch (error) {
     next(error);

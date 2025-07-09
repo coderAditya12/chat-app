@@ -1,22 +1,4 @@
-// "use client";
-// import userAuthStore from "@/store/userStore";
-// import { createSocketConnection } from "@/utils/socket";
-// import { useParams } from "next/navigation";
-// import React, { useEffect } from "react";
 
-// const page = () => {
-//   const params = useParams();
-//   const { targetUserId } = params;
-//   const { user } = userAuthStore((state) => state);
-//   const userId = user?.id;
-//   useEffect(() => {
-//     const socket = createSocketConnection();
-//     socket.emit("joinChat",{userId,targetUserId});
-//   }, []);
-
-//   return <div>{targetUserId}</div>;
-// };
-// export default page;
 "use client";
 import userAuthStore from "@/store/userStore";
 import { createSocketConnection } from "@/utils/socket";
@@ -25,6 +7,9 @@ import React, { useEffect, useState, useRef } from "react";
 import { Send } from "lucide-react";
 import axios from "axios";
 import { API_URL } from "@/lib/api";
+import ChatLoader from "@/components/ChatLoader";
+import CallButton from "@/components/CallButton";
+import Link from "next/link";
 
 interface UserInfo {
   id: string;
@@ -94,7 +79,7 @@ const page = () => {
         text: string;
         profilePic: string;
       }) => {
-        console.log(id, senderId, recieverId, text,profilePic);
+        console.log(id, senderId, recieverId, text, profilePic);
 
         // Convert socket message to Message format
         const newSocketMessage: Message = {
@@ -107,7 +92,8 @@ const page = () => {
           sender: {
             id: senderId,
             fullName: senderId === userId ? user?.fullName || "You" : "Unknown",
-            profilePic: senderId === userId ? user?.profilePic || "" : profilePic,
+            profilePic:
+              senderId === userId ? user?.profilePic || "" : profilePic,
           },
           receiver: {
             id: recieverId,
@@ -135,7 +121,7 @@ const page = () => {
       userId,
       targetUserId,
       text: newMessage,
-      profilePic:user?.profilePic
+      profilePic: user?.profilePic,
     });
 
     setNewMessage("");
@@ -192,10 +178,24 @@ const page = () => {
       return date.toLocaleDateString();
     }
   };
+  const handleVideoCall = () => {
+    if (user && targetUserId) {
+      const channel = [user.id, targetUserId].sort().join("-");
+      const callUrl = `${window.location.origin}/call/${channel}`;
+      socketRef.current.emit("sendMessage", {
+        id: Date.now(),
+        userId,
+        targetUserId,
+        text: callUrl,
+        profilePic: user?.profilePic,
+      });
+    }
+  };
 
   return (
     <div className="flex flex-col h-screen bg-gray-900">
       {/* Header */}
+      <CallButton handleVideoCall={handleVideoCall} />
       <div className="bg-gray-800 p-4 border-b border-gray-700">
         <h2 className="text-white text-lg font-semibold">
           {messages.length > 0 && messages[0].sender.id !== userId
@@ -209,9 +209,7 @@ const page = () => {
       {/* Messages Window */}
       <div className="flex-1 overflow-y-auto p-4 space-y-2">
         {loading ? (
-          <div className="flex justify-center items-center h-full">
-            <div className="text-gray-400">Loading chat history...</div>
-          </div>
+          <ChatLoader />
         ) : (
           <>
             {messages.map((message, index) => {
@@ -243,7 +241,9 @@ const page = () => {
                     >
                       {/* Profile Picture */}
                       <img
-                        src={message.sender?.profilePic || "/default-avatar.png"}
+                        src={
+                          message.sender?.profilePic || "/default-avatar.png"
+                        }
                         alt={message.sender.fullName}
                         className="w-8 h-8 rounded-full object-cover"
                       />
@@ -261,7 +261,24 @@ const page = () => {
                               : "bg-gray-700 text-gray-100"
                           }`}
                         >
-                          <p className="text-sm">{message.content}</p>
+                          <div
+                            className={`px-3 py-2 rounded-lg ${
+                              isCurrentUser
+                                ? "bg-blue-600 text-white"
+                                : "bg-gray-700 text-gray-100"
+                            }`}
+                          >
+                            {message.content.startsWith("http") ? (
+                              <Link
+                                href={new URL(message.content).pathname} // Extract only internal path
+                                className="text-blue-400 underline text-sm"
+                              >
+                                Join Video Call
+                              </Link>
+                            ) : (
+                              <p className="text-sm">{message.content}</p>
+                            )}
+                          </div>
                         </div>
                         <span className="text-xs text-gray-500 mt-1">
                           {formatTime(message.createdAt)}
