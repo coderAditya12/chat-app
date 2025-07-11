@@ -183,24 +183,21 @@ const HomePage = () => {
     if (user?.id) {
       socketRef.current.emit("user-online", user.id);
     }
-    socketRef.current.on("onlineuserlist", (onlineUsers: any[]) => {
-      console.log("online Users", onlineUsers);
-      setOnlineUsersList(new Set(onlineUsers))
+    socketRef.current.on("updateOnlineUsers", (idsOnly: any[]) => {
+      console.log("online Users", idsOnly);
+      setOnlineUsersList(new Set(idsOnly));
     });
-    socketRef.current.on("user-disconnected", (onlineUsers: any[]) => {
-
-      setOnlineUsersList(new Set(onlineUsers))
+    socketRef.current.on("onlineuserlist", (idsOnly: any[]) => {
+      console.log("ids only", idsOnly);
+      setOnlineUsersList(new Set(idsOnly));
     });
     return () => {
-      if(socketRef.current && user?.id){
-        socketRef.current.emit("user-offline",user.id)
-      }
       socket.disconnect();
     };
   }, []);
-   const isUserOnline = (userId: string) => {
-     return onlineUsersList.has(userId);
-   };
+  const isUserOnline = (userId: string) => {
+    return onlineUsersList.has(userId);
+  };
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="container mx-auto space-y-10">

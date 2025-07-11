@@ -2,6 +2,7 @@ import { Server } from "socket.io";
 import { prisma } from "./db.js";
 interface onlineUsers {
   userId: string;
+  socketId:string
 }
 let onlineUsers: onlineUsers[] = [];
 export const initializeSocket = (server: any) => {
@@ -84,24 +85,21 @@ export const initializeSocket = (server: any) => {
       }
     );
     socket.on("user-online", (userId) => {
-      console.log(userId);
-      const isAlreadyOnline = onlineUsers.includes(userId);
-      if (!isAlreadyOnline) {
-        onlineUsers.push(userId);
+      console.log(userId)
+      if (!onlineUsers.some((user) => user.userId === userId)) {
+        onlineUsers.push({ userId, socketId: socket.id });
       }
-      socket.emit("onlineuserlist", onlineUsers);
-      console.log("online Users:", onlineUsers);
+      const idsOnly = onlineUsers.map((user) => user.userId);
+      io.emit("onlineuserlist", idsOnly);
+      console.log("ids only Users:", idsOnly);
     });
-    //user offline
-    socket.on("user-offline", (userId) => {
-      if (onlineUsers.includes(userId)) {
-        onlineUsers = onlineUsers.filter((id) => id !== userId);
-      }
-      // socket.emit("user-disconnected",onli)
-    });
+    
 
     socket.on("disconnect", () => {
-      console.log("user disconnected", socket.id);
+      onlineUsers = onlineUsers.filter((user) => user.socketId !== socket.id);
+      const idsOnly = onlineUsers.map((user) => user.userId);
+      io.emit("updateOnlineUsers", idsOnly);
+      console.log("❌ Disconnected:", socket.id);
     });
   });
 };
