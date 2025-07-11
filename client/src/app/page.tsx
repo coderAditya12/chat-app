@@ -4,6 +4,8 @@ import { withAuthAndOnboarding } from "@/components/HOC";
 import NoFriendsFound from "@/components/NoFriendsFound";
 import { API_URL } from "@/lib/api";
 import { capitialize } from "@/lib/utilis";
+import userAuthStore from "@/store/userStore";
+import { createSocketConnection } from "@/utils/socket";
 import axios from "axios";
 import {
   CheckCircleIcon,
@@ -12,12 +14,13 @@ import {
   UsersIcon,
 } from "lucide-react";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
-
-// Utility function from the original code
-
+import React, { useEffect, useRef, useState } from "react";
 const HomePage = () => {
-  // State management (replacing TanStack Query)
+  const { user } = userAuthStore((state) => state);
+  const [onlineUsersList, setOnlineUsersList] = useState<Set<string>>(
+    new Set()
+  );
+  const socketRef = useRef<any>(null);
   const [friends, setFriends] = useState<any[]>([]);
   const [recommendedUsers, setRecommendedUsers] = useState<any[]>([]);
   const [outgoingFriendReqs, setOutgoingFriendReqs] = useState<any[]>([]);
@@ -27,7 +30,6 @@ const HomePage = () => {
   const [loadingFriends, setLoadingFriends] = useState(true);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [loadingOutgoingReqs, setLoadingOutgoingReqs] = useState(true);
-
   // Mutation state (replacing useMutation)
   const [isPending, setIsPending] = useState(false);
   const [currentRequestUserId, setCurrentRequestUserId] = useState<string>("");
@@ -92,7 +94,6 @@ const HomePage = () => {
     const fetchAllData = async () => {
       try {
         // Fetch friends
-
         setLoadingFriends(true);
         const friendsData = await getUserFriends();
         if (isMounted) {
@@ -113,7 +114,7 @@ const HomePage = () => {
 
         setLoadingOutgoingReqs(true);
         const outgoingData = await getOutgoingFriendReqs();
-        
+
         if (isMounted) {
           setOutgoingFriendReqs(outgoingData);
           setLoadingOutgoingReqs(false);
@@ -176,6 +177,30 @@ const HomePage = () => {
     }
   };
 
+  useEffect(() => {
+    const socket = createSocketConnection();
+    socketRef.current = socket;
+    if (user?.id) {
+      socketRef.current.emit("user-online", user.id);
+    }
+    socketRef.current.on("onlineuserlist", (onlineUsers: any[]) => {
+      console.log("online Users", onlineUsers);
+      setOnlineUsersList(new Set(onlineUsers))
+    });
+    socketRef.current.on("user-disconnected", (onlineUsers: any[]) => {
+
+      setOnlineUsersList(new Set(onlineUsers))
+    });
+    return () => {
+      if(socketRef.current && user?.id){
+        socketRef.current.emit("user-offline",user.id)
+      }
+      socket.disconnect();
+    };
+  }, []);
+   const isUserOnline = (userId: string) => {
+     return onlineUsersList.has(userId);
+   };
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="container mx-auto space-y-10">
@@ -198,9 +223,16 @@ const HomePage = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {friends.map((friend) => {
-              const friendId = friend._id || friend.id;
-             
-              return <FriendCard key={friendId} friend={friend} />;
+              const friendId = friend.id;
+
+              return (
+                <FriendCard
+                  key={friendId}
+                  friend={friend}
+                  isOnline={isUserOnline(friendId)}
+                  // isOnline={isOnline}
+                />
+              );
             })}
           </div>
         )}

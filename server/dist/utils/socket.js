@@ -1,5 +1,6 @@
 import { Server } from "socket.io";
 import { prisma } from "./db.js";
+let onlineUsers = [];
 export const initializeSocket = (server) => {
     const io = new Server(server, {
         cors: {
@@ -18,7 +19,7 @@ export const initializeSocket = (server) => {
             socket.join(roomName);
             console.log(`User ${userId} joined room: ${roomName}`);
         });
-        socket.on("sendMessage", async ({ id, userId, targetUserId, text, profilePic }) => {
+        socket.on("sendMessage", async ({ id, userId, targetUserId, text, profilePic, }) => {
             const roomName = [userId, targetUserId].sort().join("-");
             console.log("messsage recieved", text);
             io.to(roomName).emit("messageRecieved", {
@@ -26,7 +27,7 @@ export const initializeSocket = (server) => {
                 senderId: userId,
                 recieverId: targetUserId,
                 text,
-                profilePic
+                profilePic,
             });
             try {
                 const newMessage = await prisma.message.create({
@@ -52,11 +53,26 @@ export const initializeSocket = (server) => {
                         },
                     },
                 });
-                console.log(newMessage);
             }
             catch (error) {
                 console.log("error in sending the message", error);
             }
+        });
+        socket.on("user-online", (userId) => {
+            console.log(userId);
+            const isAlreadyOnline = onlineUsers.includes(userId);
+            if (!isAlreadyOnline) {
+                onlineUsers.push(userId);
+            }
+            socket.emit("onlineuserlist", onlineUsers);
+            console.log("online Users:", onlineUsers);
+        });
+        //user offline
+        socket.on("user-offline", (userId) => {
+            if (onlineUsers.includes(userId)) {
+                onlineUsers = onlineUsers.filter((id) => id !== userId);
+            }
+            // socket.emit("user-disconnected",onli)
         });
         socket.on("disconnect", () => {
             console.log("user disconnected", socket.id);
