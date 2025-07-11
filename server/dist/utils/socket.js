@@ -13,6 +13,7 @@ export const initializeSocket = (server) => {
         socket.on("joinChat", ({ userId, targetUserId }) => {
             // Fixed the console.log - there was a syntax error
             console.log("userId:", userId, "targetUserId:", targetUserId);
+            socket.data.userId = userId;
             // Create a room name (you can use any logic you want)
             const roomName = [userId, targetUserId].sort().join("-");
             // Join the room
@@ -66,6 +67,30 @@ export const initializeSocket = (server) => {
             const idsOnly = onlineUsers.map((user) => user.userId);
             io.emit("onlineuserlist", idsOnly);
             console.log("ids only Users:", idsOnly);
+        });
+        socket.on("typing", ({ targetUserId }) => {
+            const userId = socket.data.userId;
+            if (userId && targetUserId) {
+                const roomName = [userId, targetUserId].sort().join("-");
+                // Emit to room but exclude the sender
+                socket.to(roomName).emit("typing", {
+                    from: userId,
+                    targetUserId: targetUserId,
+                });
+                console.log(`${userId} is typing in room ${roomName}`);
+            }
+        });
+        socket.on("stopTyping", ({ targetUserId }) => {
+            const userId = socket.data.userId;
+            if (userId && targetUserId) {
+                const roomName = [userId, targetUserId].sort().join("-");
+                // Emit to room but exclude the sender
+                socket.to(roomName).emit("stopTyping", {
+                    from: userId,
+                    targetUserId: targetUserId,
+                });
+                console.log(`${userId} stopped typing in room ${roomName}`);
+            }
         });
         socket.on("disconnect", () => {
             onlineUsers = onlineUsers.filter((user) => user.socketId !== socket.id);

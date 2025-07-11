@@ -2,7 +2,7 @@ import { Server } from "socket.io";
 import { prisma } from "./db.js";
 interface onlineUsers {
   userId: string;
-  socketId:string
+  socketId: string;
 }
 let onlineUsers: onlineUsers[] = [];
 export const initializeSocket = (server: any) => {
@@ -21,6 +21,7 @@ export const initializeSocket = (server: any) => {
       ({ userId, targetUserId }: { userId: string; targetUserId: string }) => {
         // Fixed the console.log - there was a syntax error
         console.log("userId:", userId, "targetUserId:", targetUserId);
+        socket.data.userId = userId;
 
         // Create a room name (you can use any logic you want)
         const roomName = [userId, targetUserId].sort().join("-");
@@ -85,7 +86,7 @@ export const initializeSocket = (server: any) => {
       }
     );
     socket.on("user-online", (userId) => {
-      console.log(userId)
+      console.log(userId);
       if (!onlineUsers.some((user) => user.userId === userId)) {
         onlineUsers.push({ userId, socketId: socket.id });
       }
@@ -93,7 +94,31 @@ export const initializeSocket = (server: any) => {
       io.emit("onlineuserlist", idsOnly);
       console.log("ids only Users:", idsOnly);
     });
-    
+ socket.on("typing", ({ targetUserId }: { targetUserId: string }) => {
+   const userId = socket.data.userId;
+   if (userId && targetUserId) {
+     const roomName = [userId, targetUserId].sort().join("-");
+     // Emit to room but exclude the sender
+     socket.to(roomName).emit("typing", {
+       from: userId,
+       targetUserId: targetUserId,
+     });
+     console.log(`${userId} is typing in room ${roomName}`);
+   }
+ });
+
+ socket.on("stopTyping", ({ targetUserId }: { targetUserId: string }) => {
+   const userId = socket.data.userId;
+   if (userId && targetUserId) {
+     const roomName = [userId, targetUserId].sort().join("-");
+     // Emit to room but exclude the sender
+     socket.to(roomName).emit("stopTyping", {
+       from: userId,
+       targetUserId: targetUserId,
+     });
+     console.log(`${userId} stopped typing in room ${roomName}`);
+   }
+ });
 
     socket.on("disconnect", () => {
       onlineUsers = onlineUsers.filter((user) => user.socketId !== socket.id);
