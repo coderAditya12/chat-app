@@ -8,7 +8,7 @@ let onlineUsers: onlineUsers[] = [];
 export const initializeSocket = (server: any) => {
   const io = new Server(server, {
     cors: {
-      origin: "http://localhost:3000",
+      origin: true,
     },
   });
 
