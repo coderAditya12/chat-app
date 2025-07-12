@@ -4,7 +4,7 @@ import cookieparser from "cookie-parser";
 import dotenv from "dotenv";
 import authRoute from "./routes/auth.route.js";
 import chatRoute from "./routes/chat.route.js";
-import tokenRoute from "./routes/token.route.js"
+import tokenRoute from "./routes/token.route.js";
 import cors from "cors";
 import userRouter from "./routes/user.route.js";
 import { createServer } from "http";
@@ -23,7 +23,7 @@ app.use(
 app.use("/api/auth", authRoute);
 app.use("/api/user", userRouter);
 app.use("/api", chatRoute);
-app.use("/api",tokenRoute)
+app.use("/api", tokenRoute);
 interface customError extends Error {
   statusCode?: number;
 }
@@ -37,7 +37,8 @@ app.use((err: customError, req: Request, res: Response, next: NextFunction) => {
   });
 });
 const httpServer = createServer(app);
-initializeSocket(httpServer)
-httpServer.listen(5000, () => {
-  console.log("Server is running on port 5000");
+const PORT = process.env.PORT;
+initializeSocket(httpServer);
+httpServer.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
