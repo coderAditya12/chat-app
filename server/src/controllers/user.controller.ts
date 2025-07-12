@@ -193,11 +193,32 @@ export const acceptFriendRequest = async (
       return;
     }
     //update the status to accepted
-    await prisma.friend.update({
-      where: { id: friendRequest.id },
-      data: { status: "accepted" },
-    });
-    res.status(200).json({ message: "Friend request accepted successfully" });
+     const updatedFriendRequest = await prisma.friend.update({
+       where: { id: friendRequest.id },
+       data: { status: "accepted" },
+       include: {
+         user: {
+           select: {
+             id: true,
+             fullName: true,
+             profilePic: true,
+             nativeLanguage: true,
+             learningLanguage: true,
+           },
+         },
+       },
+     });
+    // res.status(200).json({ message: "Friend request accepted successfully" });
+     res.status(200).json({
+       message: "Friend request accepted successfully",
+       acceptedRequest: {
+         id: updatedFriendRequest.id,
+         status: updatedFriendRequest.status,
+         friend: updatedFriendRequest.user, // This provides the friend data
+         createdAt: updatedFriendRequest.createdAt,
+         updatedAt: updatedFriendRequest.updatedAt,
+       },
+     });
   } catch (error) {
     console.log("Error accepting friend request:", error);
     next(error);
