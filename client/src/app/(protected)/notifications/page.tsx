@@ -191,7 +191,7 @@ const NotificationPage = () => {
   const getFriendRequest = async () => {
     console.log("Fetching friend requests...");
     try {
-      const response = await axios.get(`${API_URL}/user/getFriend-requets`, {
+      const response = await axios.get(`${API_URL}/api/user/getFriend-requets`, {
         withCredentials: true,
       });
 
@@ -211,7 +211,7 @@ const NotificationPage = () => {
     setPending(true);
     try {
       const response = await axios.put(
-        `${API_URL}/user/friends-request/${id}/accept`,
+        `${API_URL}/api/user/friends-request/${id}/accept`,
         {}, // Empty body
         {
           withCredentials: true,

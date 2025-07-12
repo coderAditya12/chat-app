@@ -4,7 +4,6 @@ import errorHandler from "./error.js";
 
 export interface CustomJwtPayload extends JwtPayload {
   id: string;
-  // Add other properties you store in your JWT
   email?: string;
   
 }
@@ -18,11 +17,10 @@ export const protectedRoute = async (
 ) => {
   try {
     const token = req.cookies.accesstoken;
+    console.log("token",token);
 
     if (!token) {
-
      return  errorHandler(res, 401, "Unauthorized access. Please log in.");
-       
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
 
@@ -30,8 +28,6 @@ export const protectedRoute = async (
       return errorHandler(res, 401, "Invalid token. Please log in again.");
        
     }
-
-    
     req.user = decoded as CustomJwtPayload
     next()
   } catch (error) {

@@ -27,12 +27,6 @@ interface Message {
   receiver: UserInfo;
 }
 
-interface SocketMessage {
-  id: number;
-  senderId: string;
-  recieverId: string;
-  text: string;
-}
 
 const page = () => {
   const params = useParams();
@@ -250,7 +244,7 @@ const page = () => {
   const chatHistory = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_URL}/chat/${targetUserId}`, {
+      const response = await axios.get(`${API_URL}/api/chat/${targetUserId}`, {
         withCredentials: true,
       });
 

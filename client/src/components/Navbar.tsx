@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import React, {  useState } from "react";
 import ThemeSelector from "./ThemeSelector";
 import Image from "next/image";
+import { API_URL } from "@/lib/api";
 
 const Navbar = () => {
   const { user, setUser } = userAuthStore((state) => state);
@@ -20,7 +21,7 @@ const Navbar = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        "http://localhost:5000/api/auth/signout",
+        `${API_URL}/api/auth/signout`,
         { withCredentials: true }
       );
       console.log(response);
@@ -64,18 +65,7 @@ const Navbar = () => {
           {/* TODO */}
           <ThemeSelector />
 
-          {/* <div className="avatar">
-            <div className="w-9 rounded-full">
-              <img
-                src={
-                  user?.profilePicture 
-                }
-                
-                alt="User Avatar"
-                rel="noreferrer"
-              />
-            </div>
-          </div> */}
+        
           <div className="avatar">
             <div className="w-9 rounded-full">
               

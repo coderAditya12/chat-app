@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import OAuth from "@/components/OAuth";
 import userAuthStore from "@/store/userStore";
 import { signUpSchema } from "@/utils/schema";
+import { API_URL } from "@/lib/api";
 interface signupData {
   fullName: string;
   email: string;
@@ -62,7 +63,7 @@ const SignUpPage = () => {
       console.log("Submitting signup data:", signupData);
       // Send data to your API
       const response = await axios.post(
-        "http://localhost:5000/api/auth/signup",
+        `${API_URL}/api/auth/signup`,
         signupData,
         {
           withCredentials: true,

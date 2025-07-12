@@ -1,3 +1,4 @@
+import { API_URL } from "@/lib/api";
 import axios from "axios";
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
@@ -23,7 +24,7 @@ interface userStore {
 const userAuthStore = create<userStore>()(
   devtools(
     persist(
-      (set, get) => ({
+      (set) => ({
         isAuthenticated: false,
         user: null,
 
@@ -41,7 +42,7 @@ const userAuthStore = create<userStore>()(
         checkAuth: async () => {
           try {
             const response = await axios.get(
-              `${process.env.NEXT_PUBLIC_ROOT_URL}/auth/verify`,
+              `${API_URL}/api/auth/verify`,
               { withCredentials: true }
             );
 

@@ -37,7 +37,7 @@ const HomePage = () => {
   // API functions (replacing imported functions from lib/api)
   const getUserFriends = async () => {
     try {
-      const response = await axios.get(`${API_URL}/user/friends`, {
+      const response = await axios.get(`${API_URL}/api/user/friends`, {
         withCredentials: true,
       });
 
@@ -49,7 +49,7 @@ const HomePage = () => {
 
   const getRecommendedUsers = async () => {
     try {
-      const response = await axios.get(`${API_URL}/user`, {
+      const response = await axios.get(`${API_URL}/api/user`, {
         withCredentials: true,
       });
 
@@ -62,7 +62,7 @@ const HomePage = () => {
   const getOutgoingFriendReqs = async () => {
     try {
       const response = await axios.get(
-        `${API_URL}/user/outgoing-friend-requests`,
+        `${API_URL}/api/user/outgoing-friend-requests`,
         {
           withCredentials: true,
         }
@@ -77,7 +77,7 @@ const HomePage = () => {
   const sendFriendRequest = async (userId: string) => {
     try {
       const response = await axios.post(
-        `${API_URL}/user/friends-request/${userId}`,
+        `${API_URL}/api/user/friends-request/${userId}`,
         {},
         { withCredentials: true }
       );

@@ -39,7 +39,7 @@ const CallPage = () => {
   // Call API for get stream token
   const getToken = async () => {
     try {
-      const response = await axios.get(`${API_URL}/token`, {
+      const response = await axios.get(`${API_URL}/api/token`, {
         withCredentials: true,
       });
       console.log(response);

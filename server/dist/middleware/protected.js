@@ -3,6 +3,7 @@ import errorHandler from "./error.js";
 export const protectedRoute = async (req, res, next) => {
     try {
         const token = req.cookies.accesstoken;
+        console.log("token", token);
         if (!token) {
             return errorHandler(res, 401, "Unauthorized access. Please log in.");
         }

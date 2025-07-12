@@ -12,7 +12,7 @@ export default function ConditionalLayout({
   children,
 }: ConditionalLayoutProps) {
   const pathname = usePathname();
-  const { isAuthenticated, user } = userAuthStore();
+  const { isAuthenticated } = userAuthStore();
 
   // Check if current path should exclude the Layout
   const shouldExcludeLayout =

@@ -1,6 +1,7 @@
 "use client";
 import { withAuthAndOnboarding } from "@/components/HOC";
 import { LANGUAGES } from "@/constants";
+import { API_URL } from "@/lib/api";
 import userAuthStore from "@/store/userStore";
 import axios from "axios";
 import {
@@ -33,7 +34,7 @@ const OnboardingPage = () => {
     try {
       setIsPending(true);
       const response = await axios.post(
-        `http://localhost:5000/api/auth/onboard/${user?.id}`,
+        `${API_URL}/api/auth/onboard/${user?.id}`,
         formState,
         {
           withCredentials: true,
