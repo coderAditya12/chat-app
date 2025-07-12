@@ -387,6 +387,7 @@ import {
   UserCheckIcon,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 const NotificationPage = () => {
   const [loading, setLoading] = useState(true);
@@ -429,7 +430,7 @@ const NotificationPage = () => {
 
       console.log("Friend request accepted:", response.data);
       console.log("Accepted request structure:", response.data.acceptedRequest);
-
+      toast.success(`you and ${response.data.acceptedRequest.friend.fullName} are now friends`);
       // Remove from incoming requests
       setIncomingRequests((prev) =>
         prev.filter((request) => request.id !== id)
@@ -437,10 +438,13 @@ const NotificationPage = () => {
 
       // Add to accepted requests
       setAcceptedRequest((prev) => [...prev, response.data.acceptedRequest]);
+      
 
       // Refresh the data to get the latest state
       getFriendRequest();
+
     } catch (error) {
+      toast.error('something went wrong,please try again later')
       console.error("Error accepting request:", error);
     } finally {
       setPending(false);
