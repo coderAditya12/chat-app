@@ -30,33 +30,36 @@ export const initializeSocket = (server) => {
                 text,
                 profilePic,
             });
-            try {
-                const newMessage = await prisma.message.create({
-                    data: {
-                        senderId: userId,
-                        receiverId: targetUserId,
-                        content: text,
-                    },
-                    include: {
-                        sender: {
-                            select: {
-                                id: true,
-                                fullName: true,
-                                profilePic: true,
+            const isCallLink = text.includes("/call/");
+            if (!isCallLink) {
+                try {
+                    const newMessage = await prisma.message.create({
+                        data: {
+                            senderId: userId,
+                            receiverId: targetUserId,
+                            content: text,
+                        },
+                        include: {
+                            sender: {
+                                select: {
+                                    id: true,
+                                    fullName: true,
+                                    profilePic: true,
+                                },
+                            },
+                            receiver: {
+                                select: {
+                                    id: true,
+                                    fullName: true,
+                                    profilePic: true,
+                                },
                             },
                         },
-                        receiver: {
-                            select: {
-                                id: true,
-                                fullName: true,
-                                profilePic: true,
-                            },
-                        },
-                    },
-                });
-            }
-            catch (error) {
-                console.log("error in sending the message", error);
+                    });
+                }
+                catch (error) {
+                    console.log("error in sending the message", error);
+                }
             }
         });
         socket.on("user-online", (userId) => {

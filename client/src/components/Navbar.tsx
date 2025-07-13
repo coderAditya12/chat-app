@@ -5,7 +5,7 @@ import { BellIcon, LogOutIcon, ShipWheelIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
-import React, {  useState } from "react";
+import React, { useState } from "react";
 import ThemeSelector from "./ThemeSelector";
 import Image from "next/image";
 import { API_URL } from "@/lib/api";
@@ -14,16 +14,15 @@ const Navbar = () => {
   const { user, setUser } = userAuthStore((state) => state);
   const router = useRouter();
   const path = usePathname();
-  const [loading,setLoading]= useState(false);
+  const [loading, setLoading] = useState(false);
   const isChatPage = path?.startsWith("/chat");
 
   const handleLogout = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        `${API_URL}/api/auth/signout`,
-        { withCredentials: true }
-      );
+      const response = await axios.get(`${API_URL}/api/auth/signout`, {
+        withCredentials: true,
+      });
       console.log(response);
       if (response.status === 200) {
         router.replace("/login");
@@ -34,7 +33,7 @@ const Navbar = () => {
       // setAuthentication(false);
       router.push("/login");
       console.log(error);
-    }finally{
+    } finally {
       setLoading(false);
     }
   };
@@ -65,18 +64,16 @@ const Navbar = () => {
           {/* TODO */}
           <ThemeSelector />
 
-        
           <div className="avatar">
             <div className="w-9 rounded-full">
-              
               <img
-              src={user?.profilePic}
-              alt="User Avatar"
-              onError={(e) => {
-                console.log('Image failed to load:', user?.profilePic);
-                (e.target as HTMLImageElement).src = '/default-avatar.png';
-              }}
-            />
+                src={user?.profilePic}
+                alt="User Avatar"
+                onError={(e) => {
+                  console.log("Image failed to load:", user?.profilePic);
+                  (e.target as HTMLImageElement).src = "/default-avatar.png";
+                }}
+              />
             </div>
           </div>
 

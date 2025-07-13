@@ -56,32 +56,35 @@ export const initializeSocket = (server: any) => {
           text,
           profilePic,
         });
-        try {
-          const newMessage = await prisma.message.create({
-            data: {
-              senderId: userId,
-              receiverId: targetUserId,
-              content: text,
-            },
-            include: {
-              sender: {
-                select: {
-                  id: true,
-                  fullName: true,
-                  profilePic: true,
+        const isCallLink = text.includes("/call/");
+        if (!isCallLink) {
+          try {
+            const newMessage = await prisma.message.create({
+              data: {
+                senderId: userId,
+                receiverId: targetUserId,
+                content: text,
+              },
+              include: {
+                sender: {
+                  select: {
+                    id: true,
+                    fullName: true,
+                    profilePic: true,
+                  },
+                },
+                receiver: {
+                  select: {
+                    id: true,
+                    fullName: true,
+                    profilePic: true,
+                  },
                 },
               },
-              receiver: {
-                select: {
-                  id: true,
-                  fullName: true,
-                  profilePic: true,
-                },
-              },
-            },
-          });
-        } catch (error) {
-          console.log("error in sending the message", error);
+            });
+          } catch (error) {
+            console.log("error in sending the message", error);
+          }
         }
       }
     );
@@ -94,31 +97,31 @@ export const initializeSocket = (server: any) => {
       io.emit("onlineuserlist", idsOnly);
       console.log("ids only Users:", idsOnly);
     });
- socket.on("typing", ({ targetUserId }: { targetUserId: string }) => {
-   const userId = socket.data.userId;
-   if (userId && targetUserId) {
-     const roomName = [userId, targetUserId].sort().join("-");
-     // Emit to room but exclude the sender
-     socket.to(roomName).emit("typing", {
-       from: userId,
-       targetUserId: targetUserId,
-     });
-     console.log(`${userId} is typing in room ${roomName}`);
-   }
- });
+    socket.on("typing", ({ targetUserId }: { targetUserId: string }) => {
+      const userId = socket.data.userId;
+      if (userId && targetUserId) {
+        const roomName = [userId, targetUserId].sort().join("-");
+        // Emit to room but exclude the sender
+        socket.to(roomName).emit("typing", {
+          from: userId,
+          targetUserId: targetUserId,
+        });
+        console.log(`${userId} is typing in room ${roomName}`);
+      }
+    });
 
- socket.on("stopTyping", ({ targetUserId }: { targetUserId: string }) => {
-   const userId = socket.data.userId;
-   if (userId && targetUserId) {
-     const roomName = [userId, targetUserId].sort().join("-");
-     // Emit to room but exclude the sender
-     socket.to(roomName).emit("stopTyping", {
-       from: userId,
-       targetUserId: targetUserId,
-     });
-     console.log(`${userId} stopped typing in room ${roomName}`);
-   }
- });
+    socket.on("stopTyping", ({ targetUserId }: { targetUserId: string }) => {
+      const userId = socket.data.userId;
+      if (userId && targetUserId) {
+        const roomName = [userId, targetUserId].sort().join("-");
+        // Emit to room but exclude the sender
+        socket.to(roomName).emit("stopTyping", {
+          from: userId,
+          targetUserId: targetUserId,
+        });
+        console.log(`${userId} stopped typing in room ${roomName}`);
+      }
+    });
 
     socket.on("disconnect", () => {
       onlineUsers = onlineUsers.filter((user) => user.socketId !== socket.id);
