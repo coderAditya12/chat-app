@@ -13,4 +13,4 @@ function CallButton({ handleVideoCall }: { handleVideoCall: () => void }) {
   );
 }
 
-export default CallButton;
+export default CallButton

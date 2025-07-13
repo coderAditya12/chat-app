@@ -27,7 +27,6 @@ interface Message {
   receiver: UserInfo;
 }
 
-
 const page = () => {
   const params = useParams();
   const { targetUserId } = params;
