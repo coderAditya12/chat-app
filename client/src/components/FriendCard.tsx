@@ -3,7 +3,7 @@ import Link from "next/link";
 import React from "react";
 
 const FriendCard = ({ friend, isOnline }: { friend: any ,isOnline:boolean}) => {
-  console.log(friend);
+ 
   return (
     <div className="card -bg-base-200 hover:shadow:md transition-shadow">
       <div className="card-body p-4 ">
@@ -54,7 +54,7 @@ export function getLanguageFlag({ language }: { language: string }) {
         loading="lazy" // Add lazy loading for better performance
         onError={(e) => {
           // Hide image if flag fails to load
-          console.log(e);
+         
           e.currentTarget.style.display = "none";
         }}
       />

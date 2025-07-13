@@ -20,7 +20,7 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
 
         // AWAIT the checkAuth function since it's async
         const isValid = await checkAuth();
-        console.log("Initial auth check:", isValid);
+        
 
         // If not valid and on root path, redirect to signup
         if (!isValid && path === "/") {
@@ -32,7 +32,7 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
         // Set interval to call checkAuth every 14 minutes
         authInterval = setInterval(async () => {
           const stillValid = await checkAuth();
-          console.log("Periodic auth check:", stillValid);
+          
           if (!stillValid) {
             router.push("/login");
           }

@@ -56,11 +56,10 @@ const SignUpPage = () => {
     try {
       // Basic Zod validation - this is the simplified part
       const validation = signUpSchema.parse(signupData);
-      console.log(validation);
-
+      
       // If validation passes (no error thrown), proceed with submission
       setIsPending(true);
-      console.log("Submitting signup data:", signupData);
+      
       // Send data to your API
       const response = await axios.post(
         `${API_URL}/api/auth/signup`,
@@ -69,7 +68,7 @@ const SignUpPage = () => {
           withCredentials: true,
         }
       );
-      console.log("signup response", response);
+      
       // Handle successful signup
       if (response.status === 201) {
         // Always set the user data first

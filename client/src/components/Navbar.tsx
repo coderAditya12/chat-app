@@ -23,7 +23,7 @@ const Navbar = () => {
       const response = await axios.get(`${API_URL}/api/auth/signout`, {
         withCredentials: true,
       });
-      console.log(response);
+      
       if (response.status === 200) {
         router.replace("/login");
         setUser(null, false);
@@ -32,7 +32,7 @@ const Navbar = () => {
       setUser(null, false);
       // setAuthentication(false);
       router.push("/login");
-      console.log(error);
+    
     } finally {
       setLoading(false);
     }
@@ -69,10 +69,7 @@ const Navbar = () => {
               <img
                 src={user?.profilePic}
                 alt="User Avatar"
-                onError={(e) => {
-                  console.log("Image failed to load:", user?.profilePic);
-                  (e.target as HTMLImageElement).src = "/default-avatar.png";
-                }}
+                
               />
             </div>
           </div>

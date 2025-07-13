@@ -40,7 +40,7 @@ const OnboardingPage = () => {
           withCredentials: true,
         }
       );
-      console.log("Onboarding response:", response);
+      
       if (response.status === 200) {
         setUser(response.data.user, true);
         toast.success("Bio updated successfully");

@@ -32,7 +32,7 @@ const OAuth = () => {
         uid: result.user.uid,
       };
 
-      console.log("User Object:", userObject);
+     
 
       const response = await axios.post(
         `${API_URL}/api/auth/googleauth`,
@@ -42,7 +42,7 @@ const OAuth = () => {
         }
       );
 
-      console.log("OAuth Response:", response.data);
+      
 
       // Handle new user signup
       if (response.data.message === "signup") {
@@ -65,11 +65,10 @@ const OAuth = () => {
         return;
       }
 
-      // If we reach here, something unexpected happened
-      console.error("Unexpected response:", response.data);
+      
       setError("Authentication failed. Please try again.");
     } catch (error: any) {
-      console.error("OAuth error:", error);
+      
       setError("Authentication failed. Please try again.");
     } finally {
       setLoading(false);

@@ -81,7 +81,7 @@ const page = () => {
         text: string;
         profilePic: string;
       }) => {
-        console.log(id, senderId, recieverId, text, profilePic);
+        
 
         // Convert socket message to Message format
         const newSocketMessage: Message = {
@@ -184,7 +184,7 @@ const page = () => {
       );
       return response.data.secure_url;
     } catch (error) {
-      console.error("Upload error:", error);
+      
       throw new Error("Failed to upload image. Please try again.");
     }
   };
@@ -211,7 +211,7 @@ const page = () => {
         // Clean up image selection
         cancelImageSelection();
       } catch (error) {
-        console.error("Error uploading image:", error);
+     
         setUploadError(
           error instanceof Error ? error.message : "Failed to upload image"
         );
@@ -247,13 +247,13 @@ const page = () => {
         withCredentials: true,
       });
 
-      console.log("Chat history response:", response.data);
+      
 
       if (response.data.success) {
         setMessages(response.data.messages);
       }
     } catch (error) {
-      console.log("Error fetching messages:", error);
+      
     } finally {
       setLoading(false);
     }

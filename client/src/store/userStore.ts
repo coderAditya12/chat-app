@@ -41,12 +41,9 @@ const userAuthStore = create<userStore>()(
 
         checkAuth: async () => {
           try {
-            const response = await axios.get(
-              `${API_URL}/api/auth/verify`,
-              { withCredentials: true }
-            );
-
-            console.log("Auth check response:", response.data); // Debug log
+            const response = await axios.get(`${API_URL}/api/auth/verify`, {
+              withCredentials: true,
+            });
 
             if (!response.data.valid) {
               set({ isAuthenticated: false, user: null });
@@ -60,7 +57,6 @@ const userAuthStore = create<userStore>()(
             });
             return true;
           } catch (error) {
-            console.error("Auth check failed:", error); // Debug log
             set({ isAuthenticated: false, user: null });
             return false;
           }

@@ -184,11 +184,10 @@ const HomePage = () => {
       socketRef.current.emit("user-online", user.id);
     }
     socketRef.current.on("updateOnlineUsers", (idsOnly: any[]) => {
-      console.log("online Users", idsOnly);
+
       setOnlineUsersList(new Set(idsOnly));
     });
     socketRef.current.on("onlineuserlist", (idsOnly: any[]) => {
-      console.log("ids only", idsOnly);
       setOnlineUsersList(new Set(idsOnly));
     });
     return () => {
@@ -270,13 +269,7 @@ const HomePage = () => {
                 const isCurrentlyPending =
                   isPending && currentRequestUserId === userId;
 
-                console.log("👤 Rendering recommended user:", {
-                  id: userId,
-                  name: user.fullName,
-                  hasRequestBeenSent,
-                  isCurrentlyPending,
-                  outgoingIdsSet: Array.from(outgoingRequestsIds),
-                });
+                
 
                 return (
                   <div
@@ -324,7 +317,7 @@ const HomePage = () => {
                           hasRequestBeenSent ? "btn-disabled" : "btn-primary"
                         } `}
                         onClick={() => {
-                          console.log(`🖱️ Button clicked for user ${userId}`);
+                          
                           sendRequestMutation(userId);
                         }}
                         disabled={hasRequestBeenSent || isPending}

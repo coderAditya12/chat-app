@@ -42,12 +42,12 @@ const CallPage = () => {
       const response = await axios.get(`${API_URL}/api/token`, {
         withCredentials: true,
       });
-      console.log(response);
+     
       if (response.status === 200) {
         setToken(response.data.token);
       }
     } catch (error) {
-      console.log("token error", error);
+      
       toast.error("Failed to get authentication token");
       setInitializationError(true);
     } finally {
@@ -66,7 +66,7 @@ const CallPage = () => {
       if (!token || !user) return;
 
       try {
-        console.log("initializing stream video client");
+       
         const currentUser: StreamUser = {
           id: user?.id || "",
           name: user?.fullName || "",
@@ -81,7 +81,7 @@ const CallPage = () => {
 
         const callIdString = Array.isArray(callId) ? callId[0] : callId;
         if (!callIdString) {
-          console.error("Call ID is missing");
+          
           toast.error("Call ID is missing");
           setInitializationError(true);
           return;
@@ -89,12 +89,12 @@ const CallPage = () => {
 
         const callInstance = videoClient.call("default", callIdString);
         await callInstance.join({ create: true });
-        console.log("joined call successfully");
+        
 
         setClient(videoClient);
         setCall(callInstance);
       } catch (error) {
-        console.error("Error initializing call:", error);
+        
         toast.error("Could not join the call");
         setInitializationError(true);
       }
