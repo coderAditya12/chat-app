@@ -1,3 +1,4 @@
+"use client"
 import { withAuthAndOnboarding } from "@/components/HOC";
 import NoNotificationsFound from "@/components/NoNotification";
 import { API_URL } from "@/lib/api";
