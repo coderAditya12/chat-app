@@ -1,5 +1,6 @@
 import { prisma } from "../utils/db.js";
 import errorHandler from "../middleware/error.js";
+import { client } from "../index.js";
 export const getRecommendedUsers = async (req, res, next) => {
     try {
         const currentUserId = req.user?.id;
@@ -29,6 +30,7 @@ export const getRecommendedUsers = async (req, res, next) => {
                 ],
             },
         });
+        const cacheRecommendedUsers = await client.set("recommendedUsers:" + currentUserId, JSON.stringify(recommendedUsers));
         res.status(200).json({
             success: true,
             data: recommendedUsers,
@@ -248,6 +250,7 @@ export const getOutgoingFriendRequests = async (req, res, next) => {
             },
             include: {
                 friend: {
+                    //this is the person i sent the request to
                     select: {
                         fullName: true,
                         profilePic: true,

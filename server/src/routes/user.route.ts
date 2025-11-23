@@ -9,13 +9,14 @@ import {
   getRecommendedUsers,
   sendFriendRequest,
 } from "../controllers/user.controller.js";
+import { checkUserInCache } from "../middleware/caching.js";
 
 const router = express.Router();
 router.use(protectedRoute);
-router.get("/", getRecommendedUsers);
+router.get("/", checkUserInCache, getRecommendedUsers);
 router.get("/friends", getFriends);
 router.post("/friends-request/:id", sendFriendRequest);
 router.put("/friends-request/:id/accept", acceptFriendRequest);
 router.get("/getFriend-requets", getFriendRequests);
-router.get('/outgoing-friend-requests',getOutgoingFriendRequests);
+router.get("/outgoing-friend-requests", getOutgoingFriendRequests);
 export default router;

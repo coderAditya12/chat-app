@@ -9,13 +9,17 @@ import cors from "cors";
 import userRouter from "./routes/user.route.js";
 import { createServer } from "http";
 import { initializeSocket } from "./utils/socket.js";
+import redis from "redis";
 dotenv.config();
 const app = express();
+export const client = redis.createClient();
+client.on("error", (err) => console.log("Redis Client Error", err));
+await client.connect();
 app.use(express.json());
 app.use(cookieparser());
 app.use(
   cors({
-    origin:true,
+    origin: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     credentials: true,
   })

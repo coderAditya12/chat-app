@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { CustomRequest } from "../middleware/protected.js";
 import { prisma } from "../utils/db.js";
 import errorHandler from "../middleware/error.js";
+import { client } from "../index.js";
 
 export const getRecommendedUsers = async (
   req: CustomRequest,
@@ -38,7 +39,10 @@ export const getRecommendedUsers = async (
         ],
       },
     });
-
+    const cacheRecommendedUsers = await client.set(
+      "recommendedUsers:" + currentUserId,
+      JSON.stringify(recommendedUsers)
+    );
     res.status(200).json({
       success: true,
       data: recommendedUsers,
@@ -193,32 +197,32 @@ export const acceptFriendRequest = async (
       return;
     }
     //update the status to accepted
-     const updatedFriendRequest = await prisma.friend.update({
-       where: { id: friendRequest.id },
-       data: { status: "accepted" },
-       include: {
-         user: {
-           select: {
-             id: true,
-             fullName: true,
-             profilePic: true,
-             nativeLanguage: true,
-             learningLanguage: true,
-           },
-         },
-       },
-     });
+    const updatedFriendRequest = await prisma.friend.update({
+      where: { id: friendRequest.id },
+      data: { status: "accepted" },
+      include: {
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            profilePic: true,
+            nativeLanguage: true,
+            learningLanguage: true,
+          },
+        },
+      },
+    });
     // res.status(200).json({ message: "Friend request accepted successfully" });
-     res.status(200).json({
-       message: "Friend request accepted successfully",
-       acceptedRequest: {
-         id: updatedFriendRequest.id,
-         status: updatedFriendRequest.status,
-         friend: updatedFriendRequest.user, // This provides the friend data
-         createdAt: updatedFriendRequest.createdAt,
-         updatedAt: updatedFriendRequest.updatedAt,
-       },
-     });
+    res.status(200).json({
+      message: "Friend request accepted successfully",
+      acceptedRequest: {
+        id: updatedFriendRequest.id,
+        status: updatedFriendRequest.status,
+        friend: updatedFriendRequest.user, // This provides the friend data
+        createdAt: updatedFriendRequest.createdAt,
+        updatedAt: updatedFriendRequest.updatedAt,
+      },
+    });
   } catch (error) {
     console.log("Error accepting friend request:", error);
     next(error);
@@ -283,7 +287,8 @@ export const getOutgoingFriendRequests = async (
         status: "pending", //request is still not accepted
       },
       include: {
-        friend: { //this is the person i sent the request to 
+        friend: {
+          //this is the person i sent the request to
           select: {
             fullName: true,
             profilePic: true,
