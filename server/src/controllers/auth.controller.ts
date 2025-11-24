@@ -6,7 +6,11 @@ import errorHandler from "../middleware/error.js";
 import { prisma } from "../utils/db.js";
 import { CustomRequest } from "../middleware/verify.js";
 import { upsertStreamUser } from "../utils/stream.js";
+import { client } from "../index.js";
 
+const deleteCache = async () => {
+  await client.del("recommendedUsers");
+};
 // Interfaces
 export const signUp = async (
   req: Request,
@@ -35,6 +39,7 @@ export const signUp = async (
         profilePic: randomAvatar,
       },
     });
+    deleteCache();
     try {
       await upsertStreamUser({
         id: newUser.id,
@@ -183,6 +188,7 @@ export const googleAuth = async (
         profilePic: randomAvatar,
       },
     });
+    deleteCache();
     try {
       await upsertStreamUser({
         id: newUser.id.toString(),

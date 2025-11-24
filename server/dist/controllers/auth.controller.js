@@ -3,6 +3,10 @@ import bcrypt from "bcrypt";
 import errorHandler from "../middleware/error.js";
 import { prisma } from "../utils/db.js";
 import { upsertStreamUser } from "../utils/stream.js";
+import { client } from "../index.js";
+const deleteCache = async () => {
+    await client.del("recommendedUsers");
+};
 // Interfaces
 export const signUp = async (req, res, next) => {
     const { email, fullName, password } = req.body;
@@ -27,6 +31,7 @@ export const signUp = async (req, res, next) => {
                 profilePic: randomAvatar,
             },
         });
+        deleteCache();
         try {
             await upsertStreamUser({
                 id: newUser.id,
@@ -142,6 +147,7 @@ export const googleAuth = async (req, res, next) => {
                 profilePic: randomAvatar,
             },
         });
+        deleteCache();
         try {
             await upsertStreamUser({
                 id: newUser.id.toString(),

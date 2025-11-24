@@ -40,7 +40,7 @@ export const getRecommendedUsers = async (
       },
     });
     const cacheRecommendedUsers = await client.set(
-      "recommendedUsers:" + currentUserId,
+      "recommendedUsers",
       JSON.stringify(recommendedUsers)
     );
     res.status(200).json({
