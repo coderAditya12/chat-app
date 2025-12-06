@@ -1,0 +1,36 @@
+# Dependencies
+node_modules
+npm-debug.log
+
+# Build output (will be created in container)
+dist
+
+# Development files
+.env
+.env.*
+*.log
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test files
+coverage
+*.test.ts
+*.spec.ts
+__tests__
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
