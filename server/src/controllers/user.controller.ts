@@ -39,9 +39,10 @@ export const getRecommendedUsers = async (
         ],
       },
     });
-    const cacheRecommendedUsers = await client.set(
-      "recommendedUsers",
-      JSON.stringify(recommendedUsers)
+    await client.set(
+      "recommendedUsers:" + currentUserId,
+      JSON.stringify(recommendedUsers),
+      { EX: 3600 }
     );
     res.status(200).json({
       success: true,
@@ -212,6 +213,9 @@ export const acceptFriendRequest = async (
         },
       },
     });
+    // Invalidate cache for both users involved
+    await client.del(`recommendedUsers:${currentUserId}`);
+    await client.del(`recommendedUsers:${friendRequest.userId}`);
     // res.status(200).json({ message: "Friend request accepted successfully" });
     res.status(200).json({
       message: "Friend request accepted successfully",

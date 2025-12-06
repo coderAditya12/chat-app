@@ -5,7 +5,11 @@ import { prisma } from "../utils/db.js";
 import { upsertStreamUser } from "../utils/stream.js";
 import { client } from "../index.js";
 const deleteCache = async () => {
-    await client.del("recommendedUsers");
+    // Delete all user-specific recommendedUsers cache entries
+    const keys = await client.keys("recommendedUsers:*");
+    if (keys.length > 0) {
+        await client.del(keys);
+    }
 };
 // Interfaces
 export const signUp = async (req, res, next) => {
@@ -31,7 +35,7 @@ export const signUp = async (req, res, next) => {
                 profilePic: randomAvatar,
             },
         });
-        deleteCache();
+        await deleteCache();
         try {
             await upsertStreamUser({
                 id: newUser.id,
@@ -147,7 +151,7 @@ export const googleAuth = async (req, res, next) => {
                 profilePic: randomAvatar,
             },
         });
-        deleteCache();
+        await deleteCache();
         try {
             await upsertStreamUser({
                 id: newUser.id.toString(),
@@ -192,6 +196,7 @@ export const onboardUser = async (req, res, next) => {
                 isOnboard: true,
             },
         });
+        await deleteCache();
         res.status(200).json({ success: true, user: updatedUser });
     }
     catch (error) {
