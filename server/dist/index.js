@@ -11,7 +11,9 @@ import { initializeSocket } from "./utils/socket.js";
 import redis from "redis";
 dotenv.config();
 const app = express();
-export const client = redis.createClient();
+export const client = redis.createClient({
+    url: process.env.VALKEY_URL
+});
 client.on("error", (err) => console.log("Redis Client Error", err));
 await client.connect();
 app.use(express.json());
