@@ -9,16 +9,16 @@ import Link from "next/link";
 import ThemeSelector from "@/components/ThemeSelector";
 
 const Navbar = () => {
-  const { user, clearAuth, token } = userAuthStore((state) => state);
+  const { user, logout } = userAuthStore((state) => state);
   const router = useRouter();
   const pathname = usePathname();
   const isChatPage = pathname?.includes("/chat");
 
   const logoutHandler = async () => {
     try {
-      await axios.post(`${API_URL}/api/auth/logout`, {}, { withCredentials: true });
+      await axios.get(`${API_URL}/api/auth/signout`, { withCredentials: true });
     } catch (err) { }
-    clearAuth();
+    logout();
     router.push("/login");
   };
 
