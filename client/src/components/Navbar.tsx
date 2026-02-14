@@ -1,82 +1,63 @@
 "use client";
 import userAuthStore from "@/store/userStore";
 import axios from "axios";
-import { BellIcon, LogOutIcon, ShipWheelIcon } from "lucide-react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useRouter } from "next/navigation";
-import React, { useState } from "react";
-import ThemeSelector from "./ThemeSelector";
-import Image from "next/image";
+import { BellIcon, LogOut, Globe2, ShipWheelIcon } from "lucide-react";
+import React from "react";
 import { API_URL } from "@/lib/api";
+import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
+import ThemeSelector from "@/components/ThemeSelector";
 
 const Navbar = () => {
-  const { user, setUser } = userAuthStore((state) => state);
+  const { user, clearAuth, token } = userAuthStore((state) => state);
   const router = useRouter();
-  const path = usePathname();
-  const [loading, setLoading] = useState(false);
-  const isChatPage = path?.startsWith("/chat");
+  const pathname = usePathname();
+  const isChatPage = pathname?.includes("/chat");
 
-  const handleLogout = async () => {
+  const logoutHandler = async () => {
     try {
-      setLoading(true);
-      const response = await axios.get(`${API_URL}/api/auth/signout`, {
-        withCredentials: true,
-      });
-      
-      if (response.status === 200) {
-        router.replace("/login");
-        setUser(null, false);
-      }
-    } catch (error) {
-      setUser(null, false);
-      // setAuthentication(false);
-      router.push("/login");
-    
-    } finally {
-      setLoading(false);
-    }
+      await axios.post(`${API_URL}/api/auth/logout`, {}, { withCredentials: true });
+    } catch (err) { }
+    clearAuth();
+    router.push("/login");
   };
+
   return (
-    <nav className="bg-base-200 border-b border-base-300 sticky top-0 z-30 h-16 flex items-center">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-end w-full">
-          {/* LOGO - ONLY IN THE CHAT PAGE */}
-          {isChatPage && (
-            <div className="pl-5">
-              <Link href="/" className="flex items-center gap-2.5">
-                <ShipWheelIcon className="size-9 text-primary" />
-                <span className="text-3xl font-bold font-mono bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary  tracking-wider">
-                  ChatLingo
-                </span>
-              </Link>
-            </div>
-          )}
+    <nav className="bg-base-200/80 backdrop-blur-lg border-b border-base-300 sticky top-0 z-30 h-16 flex items-center">
+      <div className="max-w-7xl mx-auto w-full px-4 flex items-center justify-between">
+        {/* Logo */}
+        {!isChatPage && (
+          <Link href="/" className="flex items-center gap-2 group">
+            <ShipWheelIcon className="size-8 text-primary group-hover:rotate-45 transition-transform duration-500" />
+            <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              ChatLingo
+            </span>
+          </Link>
+        )}
 
-          <div className="flex items-center gap-3 sm:gap-4 ml-auto">
-            <Link href={"/notifications"}>
-              <button className="btn btn-ghost btn-circle">
-                <BellIcon className="h-6 w-6 text-base-content opacity-70" />
-              </button>
-            </Link>
-          </div>
+        {/* Spacer */}
+        {isChatPage && <div />}
 
-          {/* TODO */}
+        {/* Right side actions */}
+        <div className="flex items-center gap-1">
+          {/* Notifications */}
+          <Link href="/notifications" className="btn btn-ghost btn-sm btn-circle">
+            <BellIcon className="size-5" />
+          </Link>
+
+          {/* Theme Selector */}
           <ThemeSelector />
 
-          <div className="avatar">
-            <div className="w-9 rounded-full">
-              <img
-                src={user?.profilePic}
-                alt="User Avatar"
-                
-              />
+          {/* User avatar */}
+          <div className="avatar ml-1">
+            <div className="w-8 rounded-full ring ring-primary/30 ring-offset-base-100 ring-offset-1">
+              <img src={user?.profilePic || "/default-avatar.png"} alt="profile" />
             </div>
           </div>
 
-          {/* Logout button */}
-          <button className="btn btn-ghost btn-circle" onClick={handleLogout}>
-            <LogOutIcon className="h-6 w-6 text-base-content opacity-70" />
+          {/* Logout */}
+          <button onClick={logoutHandler} className="btn btn-ghost btn-sm btn-circle text-error/70 hover:text-error">
+            <LogOut className="size-5" />
           </button>
         </div>
       </div>

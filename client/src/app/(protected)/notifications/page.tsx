@@ -8,7 +8,11 @@ import {
   ClockIcon,
   MessageSquareIcon,
   UserCheckIcon,
+  UserXIcon,
+  CheckIcon,
+  XIcon,
 } from "lucide-react";
+import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -16,60 +20,45 @@ const NotificationPage = () => {
   const [loading, setLoading] = useState(true);
   const [incomingRequests, setIncomingRequests] = useState<any[]>([]);
   const [acceptedRequest, setAcceptedRequest] = useState<any[]>([]);
-  const [pending, setPending] = useState(false);
+  const [pendingId, setPendingId] = useState<string | null>(null);
 
   const getFriendRequest = async () => {
-    
     try {
       const response = await axios.get(
         `${API_URL}/api/user/getFriend-requets`,
-        {
-          withCredentials: true,
-        }
+        { withCredentials: true }
       );
-
-      
       setIncomingRequests(response.data.incomingRequests || []);
       setAcceptedRequest(response.data.acceptedRequests || []);
     } catch (error) {
-      
-      toast.error("something went wrong");
+      toast.error("Something went wrong");
     } finally {
       setLoading(false);
     }
   };
 
   const acceptRequest = async (id: string) => {
-    
-    setPending(true);
+    setPendingId(id);
     try {
       const response = await axios.put(
         `${API_URL}/api/user/friends-request/${id}/accept`,
-        {}, // Empty body
-        {
-          withCredentials: true,
-        }
+        {},
+        { withCredentials: true }
       );
 
-     
-      toast.success(`you and ${response.data.acceptedRequest.friend.fullName} are now friends`);
-      // Remove from incoming requests
+      toast.success(
+        `You and ${response.data.acceptedRequest.friend.fullName} are now friends! 🎉`
+      );
+
+      // Animate out the request before removing
       setIncomingRequests((prev) =>
         prev.filter((request) => request.id !== id)
       );
-
-      // Add to accepted requests
       setAcceptedRequest((prev) => [...prev, response.data.acceptedRequest]);
-      
-
-      // Refresh the data to get the latest state
-      getFriendRequest();
-
     } catch (error) {
-      toast.error('something went wrong,please try again later')
-      
+      toast.error("Something went wrong, please try again later");
     } finally {
-      setPending(false);
+      setPendingId(null);
     }
   };
 
@@ -80,9 +69,20 @@ const NotificationPage = () => {
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="container mx-auto max-w-4xl space-y-8">
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight mb-6">
-          Notifications
-        </h1>
+        {/* Header */}
+        <div className="flex items-center gap-3">
+          <div className="bg-primary/10 p-2 rounded-lg">
+            <BellIcon className="size-5 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+              Notifications
+            </h1>
+            <p className="text-base-content/60 text-sm">
+              Manage friend requests and connections
+            </p>
+          </div>
+        </div>
 
         {loading ? (
           <div className="flex justify-center py-12">
@@ -90,12 +90,13 @@ const NotificationPage = () => {
           </div>
         ) : (
           <>
+            {/* ==================== INCOMING REQUESTS ==================== */}
             {incomingRequests.length > 0 && (
               <section className="space-y-4">
-                <h2 className="text-xl font-semibold flex items-center gap-2">
-                  <UserCheckIcon className="h-5 w-5 text-primary" />
+                <h2 className="text-lg font-semibold flex items-center gap-2">
+                  <UserCheckIcon className="size-5 text-primary" />
                   Friend Requests
-                  <span className="badge badge-primary ml-2">
+                  <span className="badge badge-primary badge-sm">
                     {incomingRequests.length}
                   </span>
                 </h2>
@@ -104,33 +105,35 @@ const NotificationPage = () => {
                   {incomingRequests.map((request) => (
                     <div
                       key={request.id}
-                      className="card bg-base-200 shadow-sm hover:shadow-md transition-shadow"
+                      className="card bg-base-200 border border-base-300/50 hover:shadow-md transition-all duration-300"
                     >
                       <div className="card-body p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="avatar w-14 h-14 rounded-full bg-base-300">
-                              <img
-                                src={
-                                  request.user?.profilePic ||
-                                  "/default-avatar.png"
-                                }
-                                alt={request.user?.fullName || "User"}
-                                onError={(e) => {
-                                  e.currentTarget.src = "/default-avatar.png";
-                                }}
-                              />
+                        <div className="flex items-center justify-between gap-4">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="avatar">
+                              <div className="w-12 rounded-full ring ring-base-300 ring-offset-base-100 ring-offset-1">
+                                <img
+                                  src={
+                                    request.user?.profilePic ||
+                                    "/default-avatar.png"
+                                  }
+                                  alt={request.user?.fullName || "User"}
+                                  onError={(e) => {
+                                    e.currentTarget.src = "/default-avatar.png";
+                                  }}
+                                />
+                              </div>
                             </div>
-                            <div>
-                              <h3 className="font-semibold">
+                            <div className="min-w-0">
+                              <h3 className="font-semibold truncate">
                                 {request.user?.fullName || "Unknown User"}
                               </h3>
                               <div className="flex flex-wrap gap-1.5 mt-1">
-                                <span className="badge badge-secondary badge-sm">
+                                <span className="badge badge-secondary badge-xs">
                                   Native:{" "}
                                   {request.user?.nativeLanguage || "N/A"}
                                 </span>
-                                <span className="badge badge-outline badge-sm">
+                                <span className="badge badge-outline badge-xs">
                                   Learning:{" "}
                                   {request.user?.learningLanguage || "N/A"}
                                 </span>
@@ -138,16 +141,20 @@ const NotificationPage = () => {
                             </div>
                           </div>
 
-                          <button
-                            className="btn btn-primary btn-sm"
-                            onClick={() => {
-                              
-                              acceptRequest(request.id);
-                            }}
-                            disabled={pending}
-                          >
-                            Accept
-                          </button>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <button
+                              className="btn btn-primary btn-sm gap-1"
+                              onClick={() => acceptRequest(request.id)}
+                              disabled={pendingId === request.id}
+                            >
+                              {pendingId === request.id ? (
+                                <span className="loading loading-spinner loading-xs" />
+                              ) : (
+                                <CheckIcon className="size-4" />
+                              )}
+                              Accept
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -156,57 +163,52 @@ const NotificationPage = () => {
               </section>
             )}
 
-            {/* ACCEPTED REQS NOTIFICATIONS */}
+            {/* ==================== ACCEPTED / NEW CONNECTIONS ==================== */}
             {acceptedRequest.length > 0 && (
               <section className="space-y-4">
-                <h2 className="text-xl font-semibold flex items-center gap-2">
-                  <BellIcon className="h-5 w-5 text-success" />
+                <h2 className="text-lg font-semibold flex items-center gap-2">
+                  <BellIcon className="size-5 text-success" />
                   New Connections
                 </h2>
 
                 <div className="space-y-3">
                   {acceptedRequest.map((notification) => {
-                    // Debug logging
-                   
-
-                    // Try different possible structures
                     const friendData =
                       notification.friend || notification.user || notification;
 
                     return (
                       <div
                         key={notification.id}
-                        className="card bg-base-200 shadow-sm"
+                        className="card bg-base-200 border border-base-300/50"
                       >
                         <div className="card-body p-4">
-                          <div className="flex items-start gap-3">
-                            <div className="avatar mt-1 size-10 rounded-full">
-                              <img
-                                src={
-                                  friendData?.profilePic ||
-                                  "/default-avatar.png"
-                                }
-                                alt={friendData?.fullName || "Friend"}
-                               
-                              />
+                          <div className="flex items-center gap-3">
+                            <div className="avatar">
+                              <div className="w-10 rounded-full">
+                                <img
+                                  src={
+                                    friendData?.profilePic ||
+                                    "/default-avatar.png"
+                                  }
+                                  alt={friendData?.fullName || "Friend"}
+                                />
+                              </div>
                             </div>
-                            <div className="flex-1">
-                              <h3 className="font-semibold">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold truncate">
                                 {friendData?.fullName || "Unknown User"}
                               </h3>
-                              <p className="text-sm my-1">
-                                {friendData?.fullName || "Someone"} accepted
-                                your friend request
-                              </p>
-                              <p className="text-xs flex items-center opacity-70">
-                                <ClockIcon className="h-3 w-3 mr-1" />
-                                Recently
+                              <p className="text-sm text-base-content/60">
+                                You are now connected! Start chatting 🎉
                               </p>
                             </div>
-                            <div className="badge badge-success">
-                              <MessageSquareIcon className="h-3 w-3 mr-1" />
-                              New Friend
-                            </div>
+                            <Link
+                              href={`/chat/${friendData?.id}`}
+                              className="btn btn-success btn-sm gap-1"
+                            >
+                              <MessageSquareIcon className="size-4" />
+                              Chat
+                            </Link>
                           </div>
                         </div>
                       </div>

@@ -1,7 +1,7 @@
 "use client";
 import userAuthStore from "@/store/userStore";
 import { usePathname, useRouter } from "next/navigation";
-import React, {  useLayoutEffect, useState } from "react";
+import React, { useLayoutEffect, useState } from "react";
 import PageLoader from "./PageLoader";
 
 let hasAuthStarted = false;
@@ -20,11 +20,10 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
 
         // AWAIT the checkAuth function since it's async
         const isValid = await checkAuth();
-        
 
-        // If not valid and on root path, redirect to signup
+
+        // If not valid and on root path, show landing page (no redirect)
         if (!isValid && path === "/") {
-          router.push("/signup");
           setIsLoading(false);
           return;
         }
@@ -32,7 +31,7 @@ const AuthGuard = ({ children }: { children: React.ReactNode }) => {
         // Set interval to call checkAuth every 14 minutes
         authInterval = setInterval(async () => {
           const stillValid = await checkAuth();
-          
+
           if (!stillValid) {
             router.push("/login");
           }

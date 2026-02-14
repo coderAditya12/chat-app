@@ -12,9 +12,22 @@ import redis from "redis";
 dotenv.config();
 const app = express();
 export const client = redis.createClient({
-    url: process.env.VALKEY_URL
+    url: process.env.VALKEY_URL,
+    socket: {
+        reconnectStrategy: (retries) => {
+            if (retries > 20) {
+                console.log("Redis: Max reconnect attempts reached, stopping");
+                return new Error("Max reconnect attempts reached");
+            }
+            const delay = Math.min(retries * 500, 3000);
+            console.log(`Redis: Reconnecting in ${delay}ms (attempt ${retries})`);
+            return delay;
+        },
+    },
 });
-client.on("error", (err) => console.log("Redis Client Error", err));
+client.on("error", (err) => console.log("Redis Client Error", err.message));
+client.on("reconnecting", () => console.log("Redis: Reconnecting..."));
+client.on("ready", () => console.log("Redis: Connected ✅"));
 await client.connect();
 app.use(express.json());
 app.use(cookieparser());

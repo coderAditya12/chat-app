@@ -1,13 +1,20 @@
 "use client";
 import userAuthStore from "@/store/userStore";
 import { createSocketConnection } from "@/utils/socket";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState, useRef } from "react";
-import { Send, X, Image as ImageIcon } from "lucide-react";
+import {
+  Send,
+  X,
+  Image as ImageIcon,
+  ArrowLeft,
+  VideoIcon,
+  Loader2,
+  MessageCircle,
+} from "lucide-react";
 import axios from "axios";
 import { API_URL } from "@/lib/api";
 import ChatLoader from "@/components/ChatLoader";
-import CallButton from "@/components/CallButton";
 import Link from "next/link";
 
 interface UserInfo {
@@ -27,8 +34,9 @@ interface Message {
   receiver: UserInfo;
 }
 
-const page = () => {
+const ChatPage = () => {
   const params = useParams();
+  const router = useRouter();
   const { targetUserId } = params;
   const { user } = userAuthStore((state) => state);
   const userId = user?.id;
@@ -37,6 +45,10 @@ const page = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+
+  // Target user info — fetched separately so header always shows it
+  const [targetUser, setTargetUser] = useState<UserInfo | null>(null);
+  const [isTargetOnline, setIsTargetOnline] = useState<boolean>(false);
 
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -58,13 +70,60 @@ const page = () => {
     scrollToBottom();
   }, [messages]);
 
+  // Fetch target user info from friends list
+  useEffect(() => {
+    const fetchTargetUser = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/api/user/friends`, {
+          withCredentials: true,
+        });
+        const friends = response.data;
+        const friend = friends.find((f: any) => f.id === targetUserId);
+        if (friend) {
+          setTargetUser({
+            id: friend.id,
+            fullName: friend.fullName,
+            profilePic: friend.profilePic,
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching target user info", error);
+      }
+    };
+
+    if (targetUserId) {
+      fetchTargetUser();
+    }
+  }, [targetUserId]);
+
+  // Also extract target user from messages if not already set
+  useEffect(() => {
+    if (!targetUser && messages.length > 0) {
+      const msg = messages[0];
+      const other =
+        msg.sender.id !== userId ? msg.sender : msg.receiver;
+      setTargetUser(other);
+    }
+  }, [messages, targetUser, userId]);
+
   useEffect(() => {
     const socket = createSocketConnection();
     if (!socket) return;
 
     socketRef.current = socket;
 
+    // Register as online and join chat room
+    if (userId) {
+      socket.emit("user-online", userId);
+    }
     socket.emit("joinChat", { userId, targetUserId });
+
+    // Listen for online status updates
+    const handleOnlineUsers = (idsOnly: string[]) => {
+      setIsTargetOnline(idsOnly.includes(targetUserId as string));
+    };
+    socket.on("onlineuserlist", handleOnlineUsers);
+    socket.on("updateOnlineUsers", handleOnlineUsers);
 
     socket.on(
       "messageRecieved",
@@ -81,9 +140,6 @@ const page = () => {
         text: string;
         profilePic: string;
       }) => {
-        
-
-        // Convert socket message to Message format
         const newSocketMessage: Message = {
           id,
           senderId,
@@ -93,14 +149,14 @@ const page = () => {
           updatedAt: new Date().toISOString(),
           sender: {
             id: senderId,
-            fullName: senderId === userId ? user?.fullName || "You" : "Unknown",
+            fullName: senderId === userId ? user?.fullName || "You" : targetUser?.fullName || "User",
             profilePic:
-              senderId === userId ? user?.profilePic || "" : profilePic,
+              senderId === userId ? user?.profilePic || "" : profilePic || targetUser?.profilePic || "",
           },
           receiver: {
             id: recieverId,
             fullName:
-              recieverId === userId ? user?.fullName || "You" : "Unknown",
+              recieverId === userId ? user?.fullName || "You" : targetUser?.fullName || "User",
             profilePic: recieverId === userId ? user?.profilePic || "" : "",
           },
         };
@@ -126,33 +182,28 @@ const page = () => {
     };
   }, [userId, targetUserId]);
 
-  // Handle file selection (not upload yet)
+  // Handle file selection
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Reset any previous errors
     setUploadError(null);
 
-    // Validate file type
     if (!file.type.startsWith("image/")) {
       setUploadError("Please select an image file");
       return;
     }
 
-    // Validate file size (5MB limit)
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
       setUploadError("Image size should be less than 5MB");
       return;
     }
 
-    // Create preview
     const previewUrl = URL.createObjectURL(file);
     setSelectedImage(file);
     setImagePreview(previewUrl);
 
-    // Clear the file input so same file can be selected again
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -162,7 +213,7 @@ const page = () => {
   const cancelImageSelection = () => {
     setSelectedImage(null);
     if (imagePreview) {
-      URL.revokeObjectURL(imagePreview); // Clean up memory
+      URL.revokeObjectURL(imagePreview);
       setImagePreview(null);
     }
     setUploadError(null);
@@ -178,20 +229,16 @@ const page = () => {
       const response = await axios.post(
         "https://api.cloudinary.com/v1_1/dbxsllyrx/auto/upload",
         formData,
-        {
-          timeout: 30000, // 30 seconds timeout
-        }
+        { timeout: 30000 }
       );
       return response.data.secure_url;
     } catch (error) {
-      
       throw new Error("Failed to upload image. Please try again.");
     }
   };
 
-  // Handle sending message (text or image)
+  // Handle sending message
   const handleSendMessage = async () => {
-    // If there's a selected image, upload and send it
     if (selectedImage) {
       try {
         setIsUploading(true);
@@ -199,7 +246,6 @@ const page = () => {
 
         const imageUrl = await uploadImageToCloudinary(selectedImage);
 
-        // Send image message
         socketRef.current.emit("sendMessage", {
           id: Date.now(),
           userId,
@@ -208,19 +254,15 @@ const page = () => {
           profilePic: user?.profilePic,
         });
 
-        // Clean up image selection
         cancelImageSelection();
       } catch (error) {
-     
         setUploadError(
           error instanceof Error ? error.message : "Failed to upload image"
         );
       } finally {
         setIsUploading(false);
       }
-    }
-    // If there's text message, send it
-    else if (newMessage.trim()) {
+    } else if (newMessage.trim()) {
       socketRef.current.emit("sendMessage", {
         id: Date.now(),
         userId,
@@ -247,13 +289,10 @@ const page = () => {
         withCredentials: true,
       });
 
-      
-
       if (response.data.success) {
         setMessages(response.data.messages);
       }
     } catch (error) {
-      
     } finally {
       setLoading(false);
     }
@@ -299,27 +338,90 @@ const page = () => {
     }
   };
 
-  // Check if send button should be disabled
   const isSendDisabled = !newMessage.trim() && !selectedImage;
 
   return (
-    <div className="flex flex-col h-screen bg-gray-900">
-      {/* Header */}
-      <CallButton handleVideoCall={handleVideoCall} />
-      <div className="bg-gray-800 p-4 border-b border-gray-700">
-        <h2 className="text-white text-lg font-semibold">
-          {messages.length > 0 && messages[0].sender.id !== userId
-            ? messages[0].sender.fullName
-            : messages.length > 0 && messages[0].receiver.id !== userId
-            ? messages[0].receiver.fullName
-            : "Chat"}
-        </h2>
+    <div className="flex flex-col h-screen bg-base-100">
+      {/* ==================== CHAT HEADER ==================== */}
+      <div className="bg-base-200 border-b border-base-300 px-4 py-3 flex items-center gap-3 sticky top-0 z-10">
+        {/* Back button */}
+        <button
+          onClick={() => router.push("/")}
+          className="btn btn-ghost btn-sm btn-circle"
+        >
+          <ArrowLeft className="size-5" />
+        </button>
+
+        {/* User info */}
+        {targetUser ? (
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="avatar relative">
+              <div className="w-10 rounded-full ring ring-primary ring-offset-base-100 ring-offset-1">
+                <img
+                  src={targetUser.profilePic || "/default-avatar.png"}
+                  alt={targetUser.fullName}
+                />
+              </div>
+              {isTargetOnline && (
+                <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-success border-2 border-base-100 rounded-full"></div>
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <h2 className="font-semibold text-base-content truncate">
+                {targetUser.fullName}
+              </h2>
+              {otherUserTyping ? (
+                <p className="text-xs text-primary animate-pulse">
+                  typing...
+                </p>
+              ) : (
+                <p className={`text-xs ${isTargetOnline ? "text-success" : "text-base-content/50"}`}>
+                  {isTargetOnline ? "Online" : "Offline"}
+                </p>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center gap-3 flex-1">
+            <div className="avatar placeholder">
+              <div className="bg-base-300 text-base-content rounded-full w-10">
+                <span className="loading loading-spinner loading-xs"></span>
+              </div>
+            </div>
+            <div>
+              <div className="h-4 w-24 bg-base-300 rounded animate-pulse"></div>
+              <div className="h-3 w-16 bg-base-300 rounded animate-pulse mt-1"></div>
+            </div>
+          </div>
+        )}
+
+        {/* Video call button */}
+        <button
+          onClick={handleVideoCall}
+          className="btn btn-ghost btn-sm btn-circle text-success hover:bg-success/10"
+          title="Start Video Call"
+        >
+          <VideoIcon className="size-5" />
+        </button>
       </div>
 
-      {/* Messages Window */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-2">
+      {/* ==================== MESSAGES AREA ==================== */}
+      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-1 bg-base-100">
         {loading ? (
           <ChatLoader />
+        ) : messages.length === 0 ? (
+          /* Empty state */
+          <div className="flex flex-col items-center justify-center h-full text-center opacity-60">
+            <div className="bg-base-200 rounded-full p-6 mb-4">
+              <MessageCircle className="size-12 text-primary" />
+            </div>
+            <h3 className="text-lg font-semibold text-base-content mb-1">
+              No messages yet
+            </h3>
+            <p className="text-sm text-base-content/60 max-w-xs">
+              Say hello and start practicing languages together! 🌍
+            </p>
+          </div>
         ) : (
           <>
             {messages.map((message, index) => {
@@ -327,81 +429,93 @@ const page = () => {
               const showDate =
                 index === 0 ||
                 formatDate(messages[index - 1].createdAt) !==
-                  formatDate(message.createdAt);
+                formatDate(message.createdAt);
 
               return (
                 <div key={message.id}>
+                  {/* Date divider */}
                   {showDate && (
-                    <div className="flex justify-center my-4">
-                      <span className="bg-gray-700 text-gray-300 text-xs px-3 py-1 rounded-full">
-                        {formatDate(message.createdAt)}
-                      </span>
+                    <div className="divider text-xs text-base-content/40 my-6">
+                      {formatDate(message.createdAt)}
                     </div>
                   )}
 
+                  {/* DaisyUI Chat Bubble */}
                   <div
-                    className={`flex ${
-                      isCurrentUser ? "justify-end" : "justify-start"
-                    }`}
-                  >
-                    <div
-                      className={`flex items-start gap-2 max-w-xs ${
-                        isCurrentUser ? "flex-row-reverse" : ""
+                    className={`chat ${isCurrentUser ? "chat-end" : "chat-start"
                       }`}
-                    >
-                      {/* Profile Picture */}
-                      <img
-                        src={
-                          message.sender?.profilePic || "/default-avatar.png"
-                        }
-                        alt={message.sender.fullName}
-                        className="w-8 h-8 rounded-full object-cover"
-                      />
-
-                      {/* Message Bubble */}
-                      <div
-                        className={`flex flex-col ${
-                          isCurrentUser ? "items-end" : "items-start"
-                        }`}
-                      >
-                        <div
-                          className={`px-3 py-2 rounded-lg ${
-                            isCurrentUser
-                              ? "bg-blue-600 text-white"
-                              : "bg-gray-700 text-gray-100"
-                          }`}
-                        >
-                          {message.content.match(
-                            /\.(jpeg|jpg|gif|png|webp)$/i
-                          ) ? (
-                            <img
-                              src={message.content}
-                              alt="sent image"
-                              className="max-w-48 max-h-48 rounded-lg border border-gray-600 object-cover"
-                              loading="lazy"
-                            />
-                          ) : message.content.includes("/call/") ? (
-                            <Link
-                              href={new URL(message.content).pathname}
-                              className="text-blue-400 underline text-sm"
-                            >
-                              Join Video Call
-                            </Link>
-                          ) : (
-                            <p className="text-sm">{message.content}</p>
-                          )}
-                        </div>
-                        <span className="text-xs text-gray-500 mt-1">
-                          {formatTime(message.createdAt)}
-                        </span>
+                  >
+                    {/* Avatar */}
+                    <div className="chat-image avatar">
+                      <div className="w-8 rounded-full">
+                        <img
+                          src={
+                            (isCurrentUser
+                              ? user?.profilePic
+                              : message.sender?.profilePic || targetUser?.profilePic) ||
+                            "/default-avatar.png"
+                          }
+                          alt="avatar"
+                        />
                       </div>
+                    </div>
+
+                    {/* Header (name + time) */}
+                    <div className="chat-header text-xs text-base-content/50 mb-1">
+                      {isCurrentUser ? "You" : (message.sender?.fullName || targetUser?.fullName)}
+                      <time className="ml-2">
+                        {formatTime(message.createdAt)}
+                      </time>
+                    </div>
+
+                    {/* Bubble */}
+                    <div
+                      className={`chat-bubble ${isCurrentUser
+                          ? "chat-bubble-primary"
+                          : "chat-bubble"
+                        }`}
+                    >
+                      {message.content.match(
+                        /\.(jpeg|jpg|gif|png|webp)$/i
+                      ) ? (
+                        <img
+                          src={message.content}
+                          alt="sent image"
+                          className="max-w-52 max-h-52 rounded-lg object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                          loading="lazy"
+                        />
+                      ) : message.content.includes("/call/") ? (
+                        <Link
+                          href={new URL(message.content).pathname}
+                          className="flex items-center gap-2 font-medium hover:underline"
+                        >
+                          <VideoIcon className="size-4" />
+                          Join Video Call 📹
+                        </Link>
+                      ) : (
+                        <p>{message.content}</p>
+                      )}
                     </div>
                   </div>
                 </div>
               );
             })}
+
+            {/* Typing indicator */}
             {otherUserTyping && (
-              <div className="text-sm text-gray-400 mb-2 ml-2">Typing...</div>
+              <div className="chat chat-start">
+                <div className="chat-image avatar">
+                  <div className="w-8 rounded-full">
+                    <img
+                      src={targetUser?.profilePic || "/default-avatar.png"}
+                      alt="typing"
+                    />
+                  </div>
+                </div>
+                <div className="chat-bubble bg-base-300">
+                  <span className="loading loading-dots loading-sm text-base-content/60"></span>
+                </div>
+              </div>
             )}
 
             <div ref={messagesEndRef} />
@@ -409,40 +523,41 @@ const page = () => {
         )}
       </div>
 
-      {/* Image Preview Section */}
+      {/* ==================== IMAGE PREVIEW ==================== */}
       {imagePreview && (
-        <div className="bg-gray-800 border-t border-gray-700 p-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-white text-sm">Image Preview</span>
-            <button
-              onClick={cancelImageSelection}
-              className="text-gray-400 hover:text-white transition-colors"
-              disabled={isUploading}
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-          <div className="relative inline-block">
-            <img
-              src={imagePreview}
-              alt="Preview"
-              className="max-w-32 max-h-32 rounded-lg border border-gray-600 object-cover"
-            />
-            {isUploading && (
-              <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center rounded-lg">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-              </div>
-            )}
+        <div className="bg-base-200 border-t border-base-300 p-3">
+          <div className="flex items-start gap-3">
+            <div className="relative">
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="w-24 h-24 rounded-lg border border-base-300 object-cover"
+              />
+              {isUploading && (
+                <div className="absolute inset-0 bg-base-300/80 flex items-center justify-center rounded-lg">
+                  <span className="loading loading-spinner loading-sm text-primary"></span>
+                </div>
+              )}
+            </div>
+            <div className="flex flex-col gap-1">
+              <button
+                onClick={cancelImageSelection}
+                className="btn btn-ghost btn-xs btn-circle"
+                disabled={isUploading}
+              >
+                <X className="size-4" />
+              </button>
+            </div>
           </div>
           {uploadError && (
-            <p className="text-red-400 text-sm mt-2">{uploadError}</p>
+            <p className="text-error text-xs mt-2">{uploadError}</p>
           )}
         </div>
       )}
 
-      {/* Input and Send Button */}
-      <div className="bg-gray-800 p-4 border-t border-gray-700">
-        <div className="flex gap-2 items-end">
+      {/* ==================== INPUT BAR ==================== */}
+      <div className="bg-base-200 border-t border-base-300 p-3">
+        <div className="flex items-center gap-2 max-w-4xl mx-auto">
           {/* Hidden file input */}
           <input
             ref={fileInputRef}
@@ -456,10 +571,10 @@ const page = () => {
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploading}
-            className="bg-gray-700 hover:bg-gray-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white p-2 rounded-lg transition-colors"
+            className="btn btn-ghost btn-sm btn-circle"
             title="Upload Image"
           >
-            <ImageIcon className="w-5 h-5" />
+            <ImageIcon className="size-5 text-base-content/70" />
           </button>
 
           {/* Text input */}
@@ -469,18 +584,15 @@ const page = () => {
             onChange={(e) => {
               setNewMessage(e.target.value);
 
-              // Start typing if not already typing
               if (!isTyping) {
                 setIstyping(true);
                 socketRef.current?.emit("typing", { targetUserId });
               }
 
-              // Clear existing timeout
               if (typingTimeoutRef.current) {
                 clearTimeout(typingTimeoutRef.current);
               }
 
-              // Set new timeout
               typingTimeoutRef.current = setTimeout(() => {
                 setIstyping(false);
                 socketRef.current?.emit("stopTyping", { targetUserId });
@@ -489,25 +601,24 @@ const page = () => {
             onKeyPress={handleKeyPress}
             placeholder="Type a message..."
             disabled={isUploading}
-            className="flex-1 px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
+            className="input input-bordered flex-1 input-sm sm:input-md focus:input-primary"
           />
 
           {/* Send button */}
           <button
             onClick={handleSendMessage}
             disabled={isSendDisabled || isUploading}
-            className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+            className="btn btn-primary btn-sm sm:btn-md btn-circle"
           >
             {isUploading ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              <Loader2 className="size-4 animate-spin" />
             ) : (
-              <Send className="w-4 h-4" />
+              <Send className="size-4" />
             )}
-            {isUploading ? "Sending..." : "Send"}
           </button>
         </div>
       </div>
     </div>
   );
 };
-export default page;
+export default ChatPage;
